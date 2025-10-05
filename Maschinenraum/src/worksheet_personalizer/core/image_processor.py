@@ -6,7 +6,7 @@ for image manipulation and compositing.
 
 import logging
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Literal, Union
 
 from PIL import Image
 from PIL.ImageFont import FreeTypeFont
@@ -19,6 +19,7 @@ from worksheet_personalizer.config import (
     PHOTO_SIZE_CM,
 )
 from worksheet_personalizer.models.student import Student
+from worksheet_personalizer.settings_manager import SettingsManager
 from worksheet_personalizer.utils.image_utils import (
     cm_to_pixels,
     ensure_rgb,
@@ -27,6 +28,8 @@ from worksheet_personalizer.utils.image_utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+NamePosition = Literal["beside_photo", "center", "left", "right"]
 
 
 class ImageProcessor:
@@ -66,7 +69,16 @@ class ImageProcessor:
         self.worksheet_path = worksheet_path
         self.add_name = add_name
 
+        # Load settings from settings manager
+        self.settings_manager = SettingsManager()
+        self.photo_size_cm = self.settings_manager.get("photo_size_cm", PHOTO_SIZE_CM)
+        self.photo_margin_cm = self.settings_manager.get("photo_margin_cm", PHOTO_MARGIN_CM)
+        self.font_size = self.settings_manager.get("font_size", FONT_SIZE)
+        self.name_position: NamePosition = self.settings_manager.get("name_position", "beside_photo")
+
         logger.info(f"Initialized image processor for: {worksheet_path.name}")
+        logger.debug(f"Settings: photo_size={self.photo_size_cm}cm, margin={self.photo_margin_cm}cm, "
+                    f"font_size={self.font_size}, name_position={self.name_position}")
 
     def _load_worksheet(self) -> Image.Image:
         """Load the worksheet image and preserve DPI information.
@@ -118,10 +130,10 @@ class ImageProcessor:
             # Load and process student photo
             photo = Image.open(student.photo_path)
             photo = ensure_rgb(photo)
-            photo = scale_photo(photo, PHOTO_SIZE_CM, self._worksheet_dpi)
+            photo = scale_photo(photo, self.photo_size_cm, self._worksheet_dpi)
 
             # Calculate position (top-right with margin)
-            margin_pixels = cm_to_pixels(PHOTO_MARGIN_CM, self._worksheet_dpi)
+            margin_pixels = cm_to_pixels(self.photo_margin_cm, self._worksheet_dpi)
             photo_width, photo_height = photo.size
             worksheet_width, worksheet_height = worksheet.size
 
@@ -138,17 +150,9 @@ class ImageProcessor:
 
             # Add student name if requested
             if self.add_name:
-                # Calculate name position (to the left of the photo)
-                name_margin = 10  # Small margin from photo edge
-                name_x = x_position - name_margin
-                name_y = y_position + (photo_height // 2)
-
                 # Scale font size based on DPI
-                scaled_font_size = int(FONT_SIZE * (self._worksheet_dpi / 72))
+                scaled_font_size = int(self.font_size * (self._worksheet_dpi / 72))
 
-                # Render text (right-aligned to align with photo)
-                # Note: We'll position the text and then right-align it manually
-                # by calculating text width
                 from PIL import ImageDraw, ImageFont
 
                 # Create a temporary draw object to measure text
@@ -166,20 +170,40 @@ class ImageProcessor:
                 # Get text bounding box to calculate width
                 bbox = draw.textbbox((0, 0), student.name, font=font)
                 text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
 
-                # Adjust x position for right alignment
-                text_x = name_x - text_width
+                # Calculate position based on name_position setting
+                if self.name_position == "beside_photo":
+                    # To the left of the photo
+                    name_margin = 10  # Small margin from photo edge
+                    text_x = x_position - name_margin - text_width
+                    text_y = y_position + (photo_height // 2) - (text_height // 2)
+
+                elif self.name_position == "center":
+                    # Center of the page
+                    text_x = (worksheet_width - text_width) // 2
+                    text_y = margin_pixels
+
+                elif self.name_position == "left":
+                    # Left side of the page
+                    text_x = margin_pixels
+                    text_y = margin_pixels
+
+                elif self.name_position == "right":
+                    # Right side of the page (above photo)
+                    text_x = worksheet_width - text_width - margin_pixels
+                    text_y = y_position - scaled_font_size - 10  # 10 pixels above photo
 
                 # Render the name
                 render_text_on_image(
                     worksheet,
                     student.name,
-                    (text_x, name_y),
+                    (text_x, text_y),
                     font_size=scaled_font_size,
                 )
 
                 logger.debug(
-                    f"Added name '{student.name}' at position ({text_x}, {name_y})"
+                    f"Added name '{student.name}' at position {self.name_position} ({text_x}, {text_y})"
                 )
 
             # Save the personalized worksheet

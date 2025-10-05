@@ -7,6 +7,7 @@ for reading/writing PDFs and reportlab for creating overlays.
 import io
 import logging
 from pathlib import Path
+from typing import Literal
 
 from PIL import Image
 from PyPDF2 import PdfReader, PdfWriter
@@ -23,6 +24,7 @@ from worksheet_personalizer.config import (
     PHOTO_SIZE_CM,
 )
 from worksheet_personalizer.models.student import Student
+from worksheet_personalizer.settings_manager import SettingsManager
 from worksheet_personalizer.utils.image_utils import (
     cm_to_pixels,
     ensure_rgb,
@@ -30,6 +32,8 @@ from worksheet_personalizer.utils.image_utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+NamePosition = Literal["beside_photo", "center", "left", "right"]
 
 
 class PDFProcessor:
@@ -63,7 +67,16 @@ class PDFProcessor:
         self.worksheet_path = worksheet_path
         self.add_name = add_name
 
+        # Load settings from settings manager
+        self.settings_manager = SettingsManager()
+        self.photo_size_cm = self.settings_manager.get("photo_size_cm", PHOTO_SIZE_CM)
+        self.photo_margin_cm = self.settings_manager.get("photo_margin_cm", PHOTO_MARGIN_CM)
+        self.font_size = self.settings_manager.get("font_size", FONT_SIZE)
+        self.name_position: NamePosition = self.settings_manager.get("name_position", "beside_photo")
+
         logger.info(f"Initialized PDF processor for: {worksheet_path.name}")
+        logger.debug(f"Settings: photo_size={self.photo_size_cm}cm, margin={self.photo_margin_cm}cm, "
+                    f"font_size={self.font_size}, name_position={self.name_position}")
 
     def _get_page_dimensions(self) -> tuple[float, float]:
         """Get the dimensions of the first page in the PDF.
@@ -149,7 +162,7 @@ class PDFProcessor:
             # Load and process student photo
             photo = Image.open(student.photo_path)
             photo = ensure_rgb(photo)  # Convert to RGB if needed
-            photo = scale_photo(photo, PHOTO_SIZE_CM, effective_dpi)
+            photo = scale_photo(photo, self.photo_size_cm, effective_dpi)
 
             # Convert photo to ReportLab ImageReader
             photo_buffer = io.BytesIO()
@@ -158,7 +171,7 @@ class PDFProcessor:
             photo_reader = ImageReader(photo_buffer)
 
             # Calculate position (top-right with margin)
-            margin_points = cm_to_pixels(PHOTO_MARGIN_CM, effective_dpi)
+            margin_points = cm_to_pixels(self.photo_margin_cm, effective_dpi)
             photo_width, photo_height = photo.size
 
             x_position = page_width - photo_width - margin_points
@@ -181,15 +194,34 @@ class PDFProcessor:
 
             # Add student name if requested
             if self.add_name:
-                # Position name to the left of the photo
-                name_x = x_position - 5  # 5 points margin from photo
-                name_y = y_position + (photo_height / 2) - (FONT_SIZE / 2)
+                c.setFont(FONT_NAME, self.font_size)
 
-                c.setFont(FONT_NAME, FONT_SIZE)
-                c.drawRightString(name_x, name_y, student.name)
+                if self.name_position == "beside_photo":
+                    # Position name to the left of the photo
+                    name_x = x_position - 5  # 5 points margin from photo
+                    name_y = y_position + (photo_height / 2) - (self.font_size / 2)
+                    c.drawRightString(name_x, name_y, student.name)
+
+                elif self.name_position == "center":
+                    # Center of the page
+                    name_x = page_width / 2
+                    name_y = page_height - margin_points - (self.font_size / 2)
+                    c.drawCentredString(name_x, name_y, student.name)
+
+                elif self.name_position == "left":
+                    # Left side of the page
+                    name_x = margin_points
+                    name_y = page_height - margin_points - (self.font_size / 2)
+                    c.drawString(name_x, name_y, student.name)
+
+                elif self.name_position == "right":
+                    # Right side of the page (above photo)
+                    name_x = page_width - margin_points
+                    name_y = y_position - self.font_size - 5  # 5 points above photo
+                    c.drawRightString(name_x, name_y, student.name)
 
                 logger.debug(
-                    f"Added name '{student.name}' at position ({name_x:.1f}, {name_y:.1f})"
+                    f"Added name '{student.name}' at position {self.name_position}"
                 )
 
             # Finalize the canvas

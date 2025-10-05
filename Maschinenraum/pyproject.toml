@@ -58,6 +58,9 @@ Issues = "https://github.com/IhrBenutzername/arbeitsblatt-personalisierung/issue
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+worksheet_personalizer = ["py.typed"]
+
 [tool.black]
 line-length = 88
 target-version = ["py39", "py310", "py311", "py312"]
