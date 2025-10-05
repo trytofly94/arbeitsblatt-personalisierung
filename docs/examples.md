@@ -381,7 +381,7 @@ pdfinfo worksheet.pdf
 ### 1. Photo Quality
 - Use clear, well-lit photos of students
 - Recommended minimum resolution: 300x400 pixels
-- Photos will be scaled to 1.5 cm (long side)
+- Photos will be scaled to 2.5 cm (long side) for A4 print
 
 ### 2. File Naming
 - Use descriptive names: `firstname_lastname.jpg`

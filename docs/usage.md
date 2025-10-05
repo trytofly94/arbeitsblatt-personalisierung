@@ -216,8 +216,8 @@ ls personalized_worksheets/
 ### Problem: Output images/PDFs are too small or too large
 
 **Solution:**
-The photo size is fixed at 1.5 cm (long side). This is currently a constant in the code. If you need different sizes, you can:
-1. Set environment variable: `export WORKSHEET_PHOTO_SIZE=2.0` (for 2 cm)
+The photo size is set to 2.5 cm (long side) for A4 print. The size is calculated based on A4 dimensions regardless of PDF resolution. If you need different sizes, you can:
+1. Set environment variable: `export WORKSHEET_PHOTO_SIZE=3.0` (for 3 cm)
 2. Edit the configuration file (see Configuration section in README.md)
 
 ### Problem: Student names not appearing correctly
@@ -256,8 +256,8 @@ You can set the following environment variables to customize behavior:
 # Set default output directory
 export WORKSHEET_OUTPUT_DIR=./output
 
-# Set photo size (in cm)
-export WORKSHEET_PHOTO_SIZE=1.5
+# Set photo size (in cm) - default is 2.5 for A4 print
+export WORKSHEET_PHOTO_SIZE=2.5
 
 # Set photo margin (in cm)
 export WORKSHEET_PHOTO_MARGIN=0.5

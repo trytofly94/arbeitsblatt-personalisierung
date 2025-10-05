@@ -13,8 +13,12 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Physical constants for layout
-PHOTO_SIZE_CM: float = 1.5  # Photo size (long side) in centimeters
+PHOTO_SIZE_CM: float = 2.5  # Photo size (long side) in centimeters
 PHOTO_MARGIN_CM: float = 0.5  # Margin from top-right corner in centimeters
+
+# DIN A4 constants (for consistent sizing regardless of PDF resolution)
+A4_WIDTH_CM: float = 21.0  # DIN A4 width in centimeters
+A4_HEIGHT_CM: float = 29.7  # DIN A4 height in centimeters
 
 # DPI settings for different formats
 DPI_PDF: int = 72  # Standard PDF DPI (PostScript points)

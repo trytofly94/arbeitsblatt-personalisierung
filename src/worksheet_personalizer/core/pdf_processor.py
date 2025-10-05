@@ -14,6 +14,8 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from worksheet_personalizer.config import (
+    A4_HEIGHT_CM,
+    A4_WIDTH_CM,
     DPI_PDF,
     FONT_NAME,
     FONT_SIZE,
@@ -90,6 +92,35 @@ class PDFProcessor:
         except Exception as e:
             raise ValueError(f"Error reading PDF dimensions: {e}") from e
 
+    def _calculate_a4_dpi(self) -> float:
+        """Calculate the effective DPI of the PDF assuming A4 print size.
+
+        This ensures consistent photo sizing regardless of PDF resolution.
+        The calculation assumes the PDF will be printed on DIN A4 paper.
+
+        Returns:
+            Effective DPI for the PDF based on A4 dimensions
+
+        Example:
+            If PDF is 595x842 points and A4 is 21x29.7 cm:
+            DPI = 595 / (21 / 2.54) = 72 (standard PDF DPI)
+        """
+        page_width, page_height = self._get_page_dimensions()
+
+        # Convert A4 dimensions from cm to inches
+        a4_width_inches = A4_WIDTH_CM / 2.54
+        a4_height_inches = A4_HEIGHT_CM / 2.54
+
+        # Calculate DPI based on width (more reliable than height)
+        effective_dpi = page_width / a4_width_inches
+
+        logger.debug(
+            f"Calculated effective DPI: {effective_dpi:.1f} "
+            f"(page width: {page_width} points, A4 width: {a4_width_inches:.2f} inches)"
+        )
+
+        return effective_dpi
+
     def _create_overlay(self, student: Student) -> io.BytesIO:
         """Create a PDF overlay with student photo and optional name.
 
@@ -105,6 +136,9 @@ class PDFProcessor:
         # Get page dimensions
         page_width, page_height = self._get_page_dimensions()
 
+        # Calculate effective DPI for A4 print size
+        effective_dpi = self._calculate_a4_dpi()
+
         # Create a buffer for the overlay PDF
         buffer = io.BytesIO()
 
@@ -115,7 +149,7 @@ class PDFProcessor:
             # Load and process student photo
             photo = Image.open(student.photo_path)
             photo = ensure_rgb(photo)  # Convert to RGB if needed
-            photo = scale_photo(photo, PHOTO_SIZE_CM, DPI_PDF)
+            photo = scale_photo(photo, PHOTO_SIZE_CM, effective_dpi)
 
             # Convert photo to ReportLab ImageReader
             photo_buffer = io.BytesIO()
@@ -124,7 +158,7 @@ class PDFProcessor:
             photo_reader = ImageReader(photo_buffer)
 
             # Calculate position (top-right with margin)
-            margin_points = cm_to_pixels(PHOTO_MARGIN_CM, DPI_PDF)
+            margin_points = cm_to_pixels(PHOTO_MARGIN_CM, effective_dpi)
             photo_width, photo_height = photo.size
 
             x_position = page_width - photo_width - margin_points

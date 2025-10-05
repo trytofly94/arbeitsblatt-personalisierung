@@ -121,8 +121,8 @@ schueler/
 # Standard-Ausgabe-Ordner
 export WORKSHEET_OUTPUT_DIR=./output
 
-# Standard-Fotogröße in cm
-export WORKSHEET_PHOTO_SIZE=1.5
+# Standard-Fotogröße in cm (Standard: 2.5 für A4-Druck)
+export WORKSHEET_PHOTO_SIZE=2.5
 
 # Log-Level
 export LOG_LEVEL=INFO
@@ -133,7 +133,7 @@ export LOG_LEVEL=INFO
 Erstellen Sie eine `config.yaml` im Projekt-Verzeichnis:
 
 ```yaml
-photo_size_cm: 1.5
+photo_size_cm: 2.5  # Fotogröße (lange Seite) für A4-Druck
 photo_position: top-right
 add_name_default: false
 output_format: pdf
