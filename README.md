@@ -1,81 +1,122 @@
-# Arbeitsblatt-Personalisierung
+# Arbeitsblatt-Personalisierung 📚✨
 
-Ein CLI-Tool zur automatischen Personalisierung von Arbeitsblättern durch Hinzufügen von Schülerfotos und Namen.
+Ein benutzerfreundliches Tool zur automatischen Personalisierung von Arbeitsblättern durch Hinzufügen von Schülerfotos und Namen - **ohne Kommandozeile!**
 
-## Übersicht
+## 🎯 Übersicht
 
-Dieses Tool ermöglicht es Lehrern, schnell und effizient personalisierte Arbeitsblätter für eine ganze Klasse zu erstellen. Es fügt automatisch Schülerfotos in der oberen rechten Ecke ein und kann optional den Namen des Schülers hinzufügen.
+Dieses Tool ermöglicht es Lehrern, schnell und effizient personalisierte Arbeitsblätter für bis zu drei Klassen zu erstellen. Es fügt automatisch Schülerfotos ein und kann optional den Namen des Schülers hinzufügen.
 
-### Features
+### ✨ Features
 
-- **Flexibles Eingabeformat**: Unterstützt PDF und Bildformate (PNG, JPG)
-- **Batch-Verarbeitung**: Verarbeitet alle Schüler in einem Ordner automatisch
-- **Anpassbare Ausgabe**: Optionales Hinzufügen von Schülernamen
-- **Hochwertige Ausgabe**: Behält Qualität und Layout des Original-Arbeitsblatts bei
-- **Einfache Bedienung**: Intuitive Kommandozeilen-Schnittstelle
+- **🖱️ Ein-Klick-Bedienung**: Keine Kommandozeilen-Kenntnisse nötig
+- **👥 Multi-Klassen**: Unterstützt 3 Klassengruppen gleichzeitig (A, B, C)
+- **📄 Flexibles Format**: Unterstützt PDF und Bildformate (PNG, JPG)
+- **⚙️ Anpassbar**: Fotogröße, Name-Position, Schriftgröße konfigurierbar
+- **🔄 Auto-Update**: Einfaches Update-System
+- **💾 Datenschutz**: Schülerfotos bleiben beim Update erhalten
+- **🇩🇪 Auf Deutsch**: Alle Meldungen in deutscher Sprache
 
-## Voraussetzungen
+## 🚀 Schnellstart (macOS)
 
-- **Python** 3.9 oder höher
-- **pip** (Python-Paketmanager)
-
-### System-Abhängigkeiten
-
-Für PDF-zu-Bild-Konvertierung (optional):
-- **Linux**: `sudo apt-get install poppler-utils`
-- **macOS**: `brew install poppler`
-- **Windows**: [Poppler für Windows herunterladen](http://blog.alivate.com.au/poppler-windows/)
-
-## Installation
-
-### 1. Repository klonen
+### 1️⃣ Projekt herunterladen
 
 ```bash
-git clone https://github.com/IhrBenutzername/arbeitsblatt-personalisierung.git
+git clone https://github.com/trytofly94/arbeitsblatt-personalisierung.git
 cd arbeitsblatt-personalisierung
 ```
 
-### 2. Virtuelle Umgebung erstellen und aktivieren
+### 2️⃣ Ersteinrichtung (einmalig)
 
-```bash
-# Virtuelle Umgebung erstellen
-python -m venv venv
+**Doppelklick auf:** `Ersteinrichtung.command`
 
-# Aktivieren (Linux/macOS)
-source venv/bin/activate
+Das war's! Die Installation läuft automatisch.
 
-# Aktivieren (Windows)
-venv\Scripts\activate
+### 3️⃣ Arbeitsblätter personalisieren
+
+1. **Schülerfotos** in `Schüler-A/` (oder B, C) legen
+   - Dateiname = Name des Schülers (z.B. `Max_Mustermann.jpg`)
+
+2. **PDF-Arbeitsblatt** in `Input-A/` (oder B, C) legen
+
+3. **Doppelklick auf:** `Start.command`
+
+4. **Fertig!** → Personalisierte Arbeitsblätter finden Sie in `Ausgabe-A/`
+
+### 4️⃣ Einstellungen ändern (optional)
+
+**Doppelklick auf:** `Einstellungen.command`
+
+Hier können Sie anpassen:
+- 📏 Fotogröße (Standard: 2.5 cm)
+- 📍 Position des Namens (neben Foto, mittig, links, rechts)
+- 🔤 Schriftgröße
+- ✏️ Name hinzufügen (Ja/Nein)
+
+### 5️⃣ Programm aktualisieren
+
+**Doppelklick auf:** `Update.command`
+
+Ihre Schülerfotos und Einstellungen bleiben dabei erhalten!
+
+## 📁 Ordnerstruktur
+
+```
+arbeitsblatt-personalisierung/
+├── 🛠️ Maschinenraum/          # Technische Dateien (nicht anfassen)
+├── 👥 Schüler-A/               # Fotos Klasse A
+├── 👥 Schüler-B/               # Fotos Klasse B
+├── 👥 Schüler-C/               # Fotos Klasse C
+├── 📥 Input-A/                 # PDFs für Klasse A
+├── 📥 Input-B/                 # PDFs für Klasse B
+├── 📥 Input-C/                 # PDFs für Klasse C
+├── 📤 Ausgabe-A/               # Fertige Arbeitsblätter A
+├── 📤 Ausgabe-B/               # Fertige Arbeitsblätter B
+├── 📤 Ausgabe-C/               # Fertige Arbeitsblätter C
+├── ▶️ Start.command            # HIER KLICKEN zum Starten
+├── ⚙️ Einstellungen.command    # Einstellungen ändern
+├── 🔄 Update.command           # Programm aktualisieren
+└── 🏁 Ersteinrichtung.command  # Ersteinrichtung (einmalig)
 ```
 
-### 3. Dependencies installieren
+## 💡 Tipps
 
-```bash
-# Für normale Nutzung
-pip install -e .
+### Schülerfotos vorbereiten
 
-# Für Entwicklung (inkl. Test-Tools)
-pip install -e ".[dev]"
-```
+- **Format**: JPG, JPEG, PNG
+- **Benennung**: `Vorname_Nachname.jpg` oder `Vorname Nachname.jpg`
+- **Qualität**: Mindestens 300x400 Pixel empfohlen
+- **Hintergrund**: Am besten einfarbig oder neutral
 
-## Nutzung
+### Mehrere Klassen verwalten
 
-### Grundlegende Verwendung
+Sie können bis zu 3 Klassen gleichzeitig verwalten:
+- **Klasse A**: `Schüler-A/` + `Input-A/` → `Ausgabe-A/`
+- **Klasse B**: `Schüler-B/` + `Input-B/` → `Ausgabe-B/`
+- **Klasse C**: `Schüler-C/` + `Input-C/` → `Ausgabe-C/`
+
+### Was passiert beim Start?
+
+1. Alle PDFs aus `Input-A/B/C` werden verarbeitet
+2. Für jeden Schüler wird ein personalisiertes Arbeitsblatt erstellt
+3. Original-PDF wird nach `Ausgabe-X/Arbeitsblattname/` verschoben
+4. Alle personalisierten PDFs landen im gleichen Ordner
+
+### Sicherheit Ihrer Daten
+
+- ✅ Schülerfotos werden **niemals** ins Internet hochgeladen
+- ✅ Alle Daten bleiben **lokal** auf Ihrem Computer
+- ✅ Bei Updates bleiben Ihre Fotos **erhalten**
+- ✅ Das Programm ist **Open Source** und überprüfbar
+
+## 🔧 Erweiterte Nutzung (für Entwickler)
+
+### CLI-Verwendung
 
 ```bash
 python -m worksheet_personalizer \
   --worksheet pfad/zum/arbeitsblatt.pdf \
   --students-folder pfad/zu/schuelerfotos/ \
   --output-folder ./personalisiert/
-```
-
-### Mit Schülernamen
-
-```bash
-python -m worksheet_personalizer \
-  --worksheet arbeitsblatt.pdf \
-  --students-folder ./schueler/ \
-  --output-folder ./ausgabe/ \
   --add-name
 ```
 

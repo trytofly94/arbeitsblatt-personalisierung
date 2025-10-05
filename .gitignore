@@ -1,0 +1,36 @@
+# Virtual environment
+venv/
+env/
+
+# macOS
+.DS_Store
+
+# User data folders - nur .gitignore Dateien tracken
+Schüler-A/*
+!Schüler-A/.gitignore
+Schüler-B/*
+!Schüler-B/.gitignore
+Schüler-C/*
+!Schüler-C/.gitignore
+
+Input-A/*
+!Input-A/.gitignore
+Input-B/*
+!Input-B/.gitignore
+Input-C/*
+!Input-C/.gitignore
+
+Ausgabe-A/*
+!Ausgabe-A/.gitignore
+Ausgabe-B/*
+!Ausgabe-B/.gitignore
+Ausgabe-C/*
+!Ausgabe-C/.gitignore
+
+# Coverage
+.coverage
+
+# Cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
