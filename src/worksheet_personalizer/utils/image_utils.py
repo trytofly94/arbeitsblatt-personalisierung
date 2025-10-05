@@ -6,9 +6,11 @@ text rendering.
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from PIL import Image, ImageDraw, ImageFont
+from PIL.ImageFont import FreeTypeFont
+from PIL.ImageFont import ImageFont as ImageFontType
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +113,7 @@ def render_text_on_image(
     draw = ImageDraw.Draw(image)
 
     # Load font
+    font: Union[FreeTypeFont, ImageFontType]
     try:
         if font_path and font_path.exists():
             font = ImageFont.truetype(str(font_path), font_size)

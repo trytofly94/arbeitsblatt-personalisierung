@@ -21,7 +21,11 @@ from worksheet_personalizer.config import (
     PHOTO_SIZE_CM,
 )
 from worksheet_personalizer.models.student import Student
-from worksheet_personalizer.utils.image_utils import cm_to_pixels, ensure_rgb, scale_photo
+from worksheet_personalizer.utils.image_utils import (
+    cm_to_pixels,
+    ensure_rgb,
+    scale_photo,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +154,9 @@ class PDFProcessor:
                 c.setFont(FONT_NAME, FONT_SIZE)
                 c.drawRightString(name_x, name_y, student.name)
 
-                logger.debug(f"Added name '{student.name}' at position ({name_x:.1f}, {name_y:.1f})")
+                logger.debug(
+                    f"Added name '{student.name}' at position ({name_x:.1f}, {name_y:.1f})"
+                )
 
             # Finalize the canvas
             c.save()

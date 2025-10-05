@@ -12,7 +12,6 @@ from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 # Physical constants for layout
 PHOTO_SIZE_CM: float = 1.5  # Photo size (long side) in centimeters
 PHOTO_MARGIN_CM: float = 0.5  # Margin from top-right corner in centimeters

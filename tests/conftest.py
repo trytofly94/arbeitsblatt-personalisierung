@@ -1,7 +1,7 @@
 """Pytest configuration and fixtures for worksheet personalization tests."""
 
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 import pytest
 from PIL import Image, ImageDraw

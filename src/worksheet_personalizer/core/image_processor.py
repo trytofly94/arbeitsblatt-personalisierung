@@ -6,8 +6,11 @@ for image manipulation and compositing.
 
 import logging
 from pathlib import Path
+from typing import Any, Union
 
 from PIL import Image
+from PIL.ImageFont import FreeTypeFont
+from PIL.ImageFont import ImageFont as ImageFontType
 
 from worksheet_personalizer.config import (
     DPI_IMAGE,
@@ -150,6 +153,7 @@ class ImageProcessor:
 
                 # Create a temporary draw object to measure text
                 draw = ImageDraw.Draw(worksheet)
+                font: Union[FreeTypeFont, ImageFontType]
                 try:
                     font = ImageFont.truetype("Arial.ttf", scaled_font_size)
                 except OSError:
@@ -180,7 +184,9 @@ class ImageProcessor:
 
             # Save the personalized worksheet
             # Preserve original format and DPI
-            save_kwargs = {"dpi": (self._worksheet_dpi, self._worksheet_dpi)}
+            save_kwargs: dict[str, Any] = {
+                "dpi": (self._worksheet_dpi, self._worksheet_dpi)
+            }
 
             # Determine output format from extension
             output_format = output_path.suffix.lower().replace(".", "").upper()

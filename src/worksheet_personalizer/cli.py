@@ -94,9 +94,7 @@ def personalize(
             TextColumn("[progress.description]{task.description}"),
             console=console,
         ) as progress:
-            task = progress.add_task(
-                "[cyan]Initializing personalizer...", total=None
-            )
+            task = progress.add_task("[cyan]Initializing personalizer...", total=None)
 
             personalizer = WorksheetPersonalizer(
                 worksheet_path=worksheet,
@@ -113,7 +111,7 @@ def personalize(
         created_files = personalizer.process_all()
 
         # Success message
-        console.print(f"\n[bold green]✓ Success![/bold green]")
+        console.print("\n[bold green]✓ Success![/bold green]")
         console.print(
             f"Created {len(created_files)} personalized worksheet(s) in {output_folder}"
         )
