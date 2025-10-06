@@ -40,8 +40,12 @@ _NORDDRUCK_REGISTERED = False
 def _register_norddruck_font() -> str:
     """Register Norddruck font with ReportLab.
 
+    Uses the NORDDRUC_FIXED.TTF which has corrected Unicode character mapping.
+    The original font had characters mapped to Private Use Area (U+F000+)
+    which has been remapped to standard Unicode positions.
+
     Returns:
-        Font name to use ('Norddruck' or 'Helvetica' as fallback)
+        Font name to use ('Norddruck' or 'Helvetica-Bold' as fallback)
     """
     global _NORDDRUCK_REGISTERED
 
@@ -49,20 +53,20 @@ def _register_norddruck_font() -> str:
         return 'Norddruck'
 
     try:
-        # Get path to font file in package
-        font_path = Path(__file__).parent.parent / "fonts" / "NORDDRUC.TTF"
+        # Get path to rebuilt font file in package
+        font_path = Path(__file__).parent.parent / "fonts" / "NORDDRUC_REBUILT.TTF"
 
         if font_path.exists():
             pdfmetrics.registerFont(TTFont('Norddruck', str(font_path)))
             _NORDDRUCK_REGISTERED = True
-            logger.info("Norddruck font registered successfully")
+            logger.info(f"Norddruck font registered successfully from {font_path.name}")
             return 'Norddruck'
         else:
-            logger.warning(f"Norddruck font not found at {font_path}, using Helvetica")
-            return 'Helvetica'
+            logger.warning(f"Norddruck font not found at {font_path}, using Helvetica-Bold")
+            return 'Helvetica-Bold'
     except Exception as e:
-        logger.warning(f"Could not register Norddruck font: {e}, using Helvetica")
-        return 'Helvetica'
+        logger.warning(f"Could not register Norddruck font: {e}, using Helvetica-Bold")
+        return 'Helvetica-Bold'
 
 
 class PDFProcessor:
@@ -251,6 +255,13 @@ class PDFProcessor:
                     name_x = max(name_x, min_x)
 
                     name_y = y_position + (photo_height / 2) - (font_size / 3)
+
+                    logger.debug(
+                        f"Name text: '{text}' | Font: {self.font_name} | Size: {font_size:.1f}pt | "
+                        f"Position: ({name_x:.1f}, {name_y:.1f}) | Text width: {text_width:.1f}pt | "
+                        f"Page width: {page_width:.1f}pt | Min X: {min_x:.1f}pt"
+                    )
+
                     c.drawString(name_x, name_y, text)
 
                 elif self.name_position == "center":
