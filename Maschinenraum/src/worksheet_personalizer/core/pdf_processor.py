@@ -111,14 +111,14 @@ class PDFProcessor:
         self.font_size = self.settings_manager.get("font_size", None)
         self.name_position: NamePosition = self.settings_manager.get("name_position", "beside_photo")
 
-        # Name vertical position: distance from top edge in cm (default 2.0 cm)
-        self.name_top_margin_cm = self.settings_manager.get("name_top_margin_cm", 2.0)
+        # Name vertical position: percentage from top edge (default 2.5%)
+        self.name_top_margin_percent = self.settings_manager.get("name_top_margin_percent", 2.5)
 
-        # Photo vertical position: distance from top edge in cm (default 0.0 cm = dynamic margin)
-        self.photo_top_margin_cm = self.settings_manager.get("photo_top_margin_cm", 0.0)
+        # Photo vertical position: percentage from top edge (default 2.5%)
+        self.photo_top_margin_percent = self.settings_manager.get("photo_top_margin_percent", 2.5)
 
-        # Photo horizontal position: distance from right edge in cm (default 0.0 cm = dynamic margin)
-        self.photo_right_margin_cm = self.settings_manager.get("photo_right_margin_cm", 0.0)
+        # Photo horizontal position: percentage from right edge (default 3.5%)
+        self.photo_right_margin_percent = self.settings_manager.get("photo_right_margin_percent", 3.5)
 
         logger.info(f"Initialized PDF processor for: {worksheet_path.name}")
         logger.debug(f"Settings: font={self.font_name}, photo_size={self.photo_size_cm}cm, "
@@ -202,9 +202,9 @@ class PDFProcessor:
         # Calculate dynamic font size if not set (2.25% of PDF height)
         font_size = self.font_size if self.font_size is not None else page_height * 0.0225
 
-        # Calculate dynamic margins proportional to page size
-        margin_right = page_width * 0.035   # ~3.5% of width
-        margin_top = page_height * 0.025    # ~2.5% of height
+        # Calculate margins using user-defined percentages
+        margin_right = page_width * (self.photo_right_margin_percent / 100)
+        margin_top = page_height * (self.photo_top_margin_percent / 100)
 
         # Create a buffer for the overlay PDF
         buffer = io.BytesIO()
@@ -224,17 +224,8 @@ class PDFProcessor:
             photo_buffer.seek(0)
             photo_reader = ImageReader(photo_buffer)
 
-            # Calculate position (top-right with configurable or dynamic margin)
+            # Calculate position (top-right with percentage-based margins)
             photo_width, photo_height = photo.size
-
-            # Use custom margin if set (> 0), otherwise use dynamic margin
-            if self.photo_right_margin_cm > 0:
-                # Convert cm to points (1 cm = 28.35 points)
-                margin_right = (self.photo_right_margin_cm / 2.54) * 72
-
-            if self.photo_top_margin_cm > 0:
-                # Convert cm to points
-                margin_top = (self.photo_top_margin_cm / 2.54) * 72
 
             x_position = page_width - photo_width - margin_right
             y_position = page_height - photo_height - margin_top
@@ -272,9 +263,8 @@ class PDFProcessor:
                     min_x = page_width * 0.035
                     name_x = max(name_x, min_x)
 
-                    # Calculate vertical position: fixed distance from top edge
-                    # Convert cm to points (1 cm = 28.35 points at standard DPI)
-                    name_top_margin_pt = (self.name_top_margin_cm / 2.54) * 72  # cm to inches to points
+                    # Calculate vertical position: percentage-based distance from top edge
+                    name_top_margin_pt = page_height * (self.name_top_margin_percent / 100)
                     name_y = page_height - name_top_margin_pt
 
                     logger.debug(

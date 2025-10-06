@@ -56,16 +56,18 @@ Hier können Sie anpassen:
 - ✏️ **Name hinzufügen** (Ja/Nein)
   - Format: "Name: Max Mustermann" neben dem Foto
   - Verwendet reparierte Norddruck-Schrift für einheitliches Aussehen
-- 📐 **Name-Abstand von oben** (Standard: 2.0 cm)
-  - Fester Abstand vom oberen Blattrand
-  - Wählen Sie aus 6 Voreinstellungen (0.5 - 3.0 cm) oder eigenen Wert
-  - Unabhängig von der Foto-Position
-- ⬆️ **Foto-Abstand von oben** (Standard: Automatisch)
-  - Automatisch = ~2.5% der PDF-Höhe (passt sich an)
-  - Oder fester Wert von 0.0 cm (ganz oben) bis 2.5 cm
-- ➡️ **Foto-Abstand von rechts** (Standard: Automatisch)
-  - Automatisch = ~3.5% der PDF-Breite (passt sich an)
-  - Oder fester Wert von 0.0 cm (ganz rechts) bis 2.5 cm
+- 📐 **Name-Abstand von oben** (Standard: Normal)
+  - Dynamischer Abstand als Prozent der PDF-Höhe
+  - 9 Stufen: Kein Abstand, Minimal, Sehr schmal, Schmal, Normal, Mittel, Breit, Sehr breit, Maximal
+  - Passt sich automatisch an verschiedene PDF-Größen an
+- ⬆️ **Foto-Abstand von oben** (Standard: Normal)
+  - Dynamischer Abstand als Prozent der PDF-Höhe (2.5%)
+  - 9 Stufen: Von 0.0% (ganz oben) bis 10.0% (maximal)
+  - Beschreibende Namen statt Zentimeter-Angaben
+- ➡️ **Foto-Abstand von rechts** (Standard: Mittel)
+  - Dynamischer Abstand als Prozent der PDF-Breite (3.5%)
+  - 9 Stufen: Von 0.0% (ganz rechts) bis 10.0% (maximal)
+  - Immer proportional zur Seitengröße
 
 **Automatische Anpassungen:**
 - 🔤 Schriftgröße passt sich dynamisch an PDF-Größe an (2.25% der Höhe)
@@ -202,14 +204,25 @@ Die Einstellungen werden in `Maschinenraum/settings.json` gespeichert:
 
 ```json
 {
-  "photo_size_cm": 2.5,           // Fotogröße in cm
-  "add_name": true,               // Name hinzufügen (Ja/Nein)
-  "add_name_default": true,       // Standard für neue Arbeitsblätter
-  "name_top_margin_cm": 2.0,      // Abstand Name vom oberen Rand in cm
-  "photo_top_margin_cm": 0.0,     // Abstand Foto von oben (0.0 = automatisch)
-  "photo_right_margin_cm": 0.0    // Abstand Foto von rechts (0.0 = automatisch)
+  "photo_size_cm": 2.5,              // Fotogröße in cm
+  "add_name": true,                  // Name hinzufügen (Ja/Nein)
+  "add_name_default": true,          // Standard für neue Arbeitsblätter
+  "name_top_margin_percent": 2.5,    // Abstand Name von oben in % (2.5 = Normal)
+  "photo_top_margin_percent": 2.5,   // Abstand Foto von oben in % (2.5 = Normal)
+  "photo_right_margin_percent": 3.5  // Abstand Foto von rechts in % (3.5 = Mittel)
 }
 ```
+
+**Prozent-Stufen:**
+- 0.0% = Kein Abstand
+- 0.5% = Minimal
+- 1.0% = Sehr schmal
+- 1.5% = Schmal
+- 2.5% = Normal
+- 3.5% = Mittel
+- 5.0% = Breit
+- 7.0% = Sehr breit
+- 10.0% = Maximal
 
 **Hinweis:** Verwenden Sie `Einstellungen.command` statt diese Datei manuell zu bearbeiten!
 
