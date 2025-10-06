@@ -1,7 +1,5 @@
 {
   "photo_size_cm": 2.5,
-  "add_name": true,
-  "name_position": "beside_photo",
-  "font_size": 12,
-  "photo_margin_cm": 0.5
+  "add_name": false,
+  "add_name_default": false
 }
