@@ -212,9 +212,9 @@ class PDFProcessor:
             photo = ensure_rgb(photo)  # Convert to RGB if needed
             photo = scale_photo(photo, self.photo_size_cm, effective_dpi)
 
-            # Convert photo to ReportLab ImageReader
+            # Convert photo to ReportLab ImageReader with maximum quality
             photo_buffer = io.BytesIO()
-            photo.save(photo_buffer, format="JPEG")
+            photo.save(photo_buffer, format="PNG", optimize=False)  # PNG = lossless, no quality loss
             photo_buffer.seek(0)
             photo_reader = ImageReader(photo_buffer)
 
