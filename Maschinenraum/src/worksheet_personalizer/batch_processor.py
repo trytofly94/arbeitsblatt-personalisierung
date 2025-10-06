@@ -273,14 +273,9 @@ def main() -> None:
         processor = BatchProcessor(base_path)
         processor.process_all_groups()
 
-        console.print("[dim]Drücken Sie Enter zum Beenden...[/dim]")
-        input()
-
     except Exception as e:
         console.print(f"\n[bold red]❌ Kritischer Fehler:[/bold red] {e}\n")
         logger.error(f"Critical error in batch processing: {e}", exc_info=True)
-        console.print("[dim]Drücken Sie Enter zum Beenden...[/dim]")
-        input()
         raise
 
 
