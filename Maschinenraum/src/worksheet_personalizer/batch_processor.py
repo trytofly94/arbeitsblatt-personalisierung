@@ -245,8 +245,8 @@ class BatchProcessor:
                     task_id
                 )
 
-                # Move processed worksheet to output folder
-                self._move_processed_worksheet(worksheet_path, output_subfolder)
+                # Keep original worksheet in Input folder (don't move)
+                # self._move_processed_worksheet(worksheet_path, output_subfolder)
 
                 console.print(f"[green]✓ {worksheet_path.name} fertig![/green]")
 
