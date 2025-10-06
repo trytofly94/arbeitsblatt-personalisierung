@@ -212,6 +212,7 @@ class PDFProcessor:
 
         # Create canvas for drawing
         c = canvas.Canvas(buffer, pagesize=(page_width, page_height))
+        c.setPageCompression(0)  # Disable compression for maximum image quality
 
         try:
             # Load and process student photo
