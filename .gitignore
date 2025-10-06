@@ -5,6 +5,13 @@ env/
 # macOS
 .DS_Store
 
+# Lokale Test-Dateien
+Tests/
+create_test_versions.py
+
+# Projekt-spezifische CLAUDE.md (nur für lokale Entwicklung)
+CLAUDE.md
+
 # User data folders - nur .gitignore Dateien tracken
 Schüler-A/*
 !Schüler-A/.gitignore
