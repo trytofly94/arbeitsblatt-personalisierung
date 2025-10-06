@@ -136,6 +136,10 @@ while true; do
                     continue
                     ;;
             esac
+
+            # Speichere Einstellung sofort
+            set_setting "photo_size_cm" "$PHOTO_SIZE"
+
             echo ""
             echo "✓ Fotogröße auf ${PHOTO_SIZE} cm gesetzt"
             sleep 1
@@ -162,11 +166,17 @@ while true; do
             case $NAME_CHOICE in
                 1)
                     ADD_NAME="true"
+                    # Speichere Einstellung sofort (beide Keys für Kompatibilität)
+                    set_setting "add_name_default" "$ADD_NAME"
+                    set_setting "add_name" "$ADD_NAME"
                     echo ""
                     echo "✓ Name wird künftig hinzugefügt"
                     ;;
                 2)
                     ADD_NAME="false"
+                    # Speichere Einstellung sofort (beide Keys für Kompatibilität)
+                    set_setting "add_name_default" "$ADD_NAME"
+                    set_setting "add_name" "$ADD_NAME"
                     echo ""
                     echo "✓ Nur Foto wird verwendet"
                     ;;
