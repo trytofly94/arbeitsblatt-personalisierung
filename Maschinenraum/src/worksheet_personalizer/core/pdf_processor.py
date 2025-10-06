@@ -123,7 +123,8 @@ class PDFProcessor:
         logger.info(f"Initialized PDF processor for: {worksheet_path.name}")
         logger.debug(f"Settings: font={self.font_name}, photo_size={self.photo_size_cm}cm, "
                     f"font_size={'dynamic' if self.font_size is None else self.font_size}, "
-                    f"name_position={self.name_position}, photo_top_margin={self.photo_top_margin_cm}cm")
+                    f"name_position={self.name_position}, photo_top={self.photo_top_margin_percent}%, "
+                    f"photo_right={self.photo_right_margin_percent}%, name_top={self.name_top_margin_percent}%")
 
     def _get_page_dimensions(self) -> tuple[float, float]:
         """Get the dimensions of the first page in the PDF.
