@@ -13,14 +13,13 @@ from PIL import Image
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 from worksheet_personalizer.config import (
     A4_HEIGHT_CM,
     A4_WIDTH_CM,
     DPI_PDF,
-    FONT_NAME,
-    FONT_SIZE,
-    PHOTO_MARGIN_CM,
     PHOTO_SIZE_CM,
 )
 from worksheet_personalizer.models.student import Student
@@ -34,6 +33,36 @@ from worksheet_personalizer.utils.image_utils import (
 logger = logging.getLogger(__name__)
 
 NamePosition = Literal["beside_photo", "center", "left", "right"]
+
+# Register Norddruck font
+_NORDDRUCK_REGISTERED = False
+
+def _register_norddruck_font() -> str:
+    """Register Norddruck font with ReportLab.
+
+    Returns:
+        Font name to use ('Norddruck' or 'Helvetica' as fallback)
+    """
+    global _NORDDRUCK_REGISTERED
+
+    if _NORDDRUCK_REGISTERED:
+        return 'Norddruck'
+
+    try:
+        # Get path to font file in package
+        font_path = Path(__file__).parent.parent / "fonts" / "NORDDRUC.TTF"
+
+        if font_path.exists():
+            pdfmetrics.registerFont(TTFont('Norddruck', str(font_path)))
+            _NORDDRUCK_REGISTERED = True
+            logger.info("Norddruck font registered successfully")
+            return 'Norddruck'
+        else:
+            logger.warning(f"Norddruck font not found at {font_path}, using Helvetica")
+            return 'Helvetica'
+    except Exception as e:
+        logger.warning(f"Could not register Norddruck font: {e}, using Helvetica")
+        return 'Helvetica'
 
 
 class PDFProcessor:
@@ -67,16 +96,21 @@ class PDFProcessor:
         self.worksheet_path = worksheet_path
         self.add_name = add_name
 
+        # Register and get font name
+        self.font_name = _register_norddruck_font()
+
         # Load settings from settings manager
         self.settings_manager = SettingsManager()
         self.photo_size_cm = self.settings_manager.get("photo_size_cm", PHOTO_SIZE_CM)
-        self.photo_margin_cm = self.settings_manager.get("photo_margin_cm", PHOTO_MARGIN_CM)
-        self.font_size = self.settings_manager.get("font_size", FONT_SIZE)
+
+        # Get font_size from settings or calculate dynamically
+        self.font_size = self.settings_manager.get("font_size", None)
         self.name_position: NamePosition = self.settings_manager.get("name_position", "beside_photo")
 
         logger.info(f"Initialized PDF processor for: {worksheet_path.name}")
-        logger.debug(f"Settings: photo_size={self.photo_size_cm}cm, margin={self.photo_margin_cm}cm, "
-                    f"font_size={self.font_size}, name_position={self.name_position}")
+        logger.debug(f"Settings: font={self.font_name}, photo_size={self.photo_size_cm}cm, "
+                    f"font_size={'dynamic' if self.font_size is None else self.font_size}, "
+                    f"name_position={self.name_position}")
 
     def _get_page_dimensions(self) -> tuple[float, float]:
         """Get the dimensions of the first page in the PDF.
@@ -152,6 +186,13 @@ class PDFProcessor:
         # Calculate effective DPI for A4 print size
         effective_dpi = self._calculate_a4_dpi()
 
+        # Calculate dynamic font size if not set (2.25% of PDF height)
+        font_size = self.font_size if self.font_size is not None else page_height * 0.0225
+
+        # Calculate dynamic margins proportional to page size
+        margin_right = page_width * 0.035   # ~3.5% of width
+        margin_top = page_height * 0.025    # ~2.5% of height
+
         # Create a buffer for the overlay PDF
         buffer = io.BytesIO()
 
@@ -170,12 +211,11 @@ class PDFProcessor:
             photo_buffer.seek(0)
             photo_reader = ImageReader(photo_buffer)
 
-            # Calculate position (top-right with margin)
-            margin_points = cm_to_pixels(self.photo_margin_cm, effective_dpi)
+            # Calculate position (top-right with dynamic margin)
             photo_width, photo_height = photo.size
 
-            x_position = page_width - photo_width - margin_points
-            y_position = page_height - photo_height - margin_points
+            x_position = page_width - photo_width - margin_right
+            y_position = page_height - photo_height - margin_top
 
             # Draw photo
             c.drawImage(
@@ -194,30 +234,35 @@ class PDFProcessor:
 
             # Add student name if requested
             if self.add_name:
-                c.setFont(FONT_NAME, self.font_size)
+                c.setFont(self.font_name, font_size)
+
+                # Calculate dynamic gap between name and photo (1.3% of width)
+                text_photo_gap = page_width * 0.013
 
                 if self.name_position == "beside_photo":
-                    # Position name to the left of the photo
-                    name_x = x_position - 5  # 5 points margin from photo
-                    name_y = y_position + (photo_height / 2) - (self.font_size / 2)
-                    c.drawRightString(name_x, name_y, student.name)
+                    # Position name to the left of the photo with dynamic formatting
+                    text = f"Name: {student.name}"
+                    text_width = c.stringWidth(text, self.font_name, font_size)
+                    name_x = x_position - text_width - text_photo_gap
+                    name_y = y_position + (photo_height / 2) - (font_size / 3)
+                    c.drawString(name_x, name_y, text)
 
                 elif self.name_position == "center":
                     # Center of the page
                     name_x = page_width / 2
-                    name_y = page_height - margin_points - (self.font_size / 2)
+                    name_y = page_height - margin_top - (font_size / 2)
                     c.drawCentredString(name_x, name_y, student.name)
 
                 elif self.name_position == "left":
                     # Left side of the page
-                    name_x = margin_points
-                    name_y = page_height - margin_points - (self.font_size / 2)
+                    name_x = margin_right
+                    name_y = page_height - margin_top - (font_size / 2)
                     c.drawString(name_x, name_y, student.name)
 
                 elif self.name_position == "right":
                     # Right side of the page (above photo)
-                    name_x = page_width - margin_points
-                    name_y = y_position - self.font_size - 5  # 5 points above photo
+                    name_x = page_width - margin_right
+                    name_y = y_position - font_size - text_photo_gap
                     c.drawRightString(name_x, name_y, student.name)
 
                 logger.debug(
