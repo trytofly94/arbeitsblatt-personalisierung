@@ -11,9 +11,10 @@ Dieses Tool ermöglicht es Lehrern, schnell und effizient personalisierte Arbeit
 - **🖱️ Ein-Klick-Bedienung**: Keine Kommandozeilen-Kenntnisse nötig
 - **👥 Multi-Klassen**: Unterstützt 3 Klassengruppen gleichzeitig (A, B, C)
 - **📄 Flexibles Format**: Unterstützt PDF und Bildformate (PNG, JPG)
-- **⚙️ Anpassbar**: Fotogröße und Name-Anzeige einfach konfigurierbar
-- **🎨 Professionell**: Norddruck-Schrift und dynamische Größenanpassung
+- **⚙️ Anpassbar**: Fotogröße, Name-Anzeige und vertikale Position konfigurierbar
+- **🎨 Professionell**: Reparierte Norddruck-Schrift mit korrektem Unicode-Mapping
 - **📏 Intelligent**: Automatische Skalierung für jede PDF-Größe
+- **🎯 Präzise**: Fester Abstand vom oberen Blattrand (konsistent über alle PDFs)
 - **🔄 Auto-Update**: Einfaches Update-System
 - **💾 Datenschutz**: Schülerfotos bleiben beim Update erhalten
 - **🇩🇪 Auf Deutsch**: Alle Meldungen in deutscher Sprache
@@ -54,12 +55,16 @@ Hier können Sie anpassen:
   - Oder geben Sie eine eigene Größe ein
 - ✏️ **Name hinzufügen** (Ja/Nein)
   - Format: "Name: Max Mustermann" neben dem Foto
-  - Verwendet Norddruck-Schrift für einheitliches Aussehen
+  - Verwendet reparierte Norddruck-Schrift für einheitliches Aussehen
+- 📐 **Name-Abstand von oben** (Standard: 2.0 cm)
+  - Fester Abstand vom oberen Blattrand
+  - Wählen Sie aus 6 Voreinstellungen (0.5 - 3.0 cm) oder eigenen Wert
+  - Unabhängig von der Foto-Position
 
 **Automatische Anpassungen:**
 - 🔤 Schriftgröße passt sich dynamisch an PDF-Größe an (2.25% der Höhe)
 - 📐 Abstände und Ränder skalieren automatisch mit dem Arbeitsblatt
-- 📝 Name erscheint immer links vom Foto in optimaler Position
+- 📝 Name erscheint horizontal links vom Foto, vertikal nach gewähltem Abstand
 
 ### 5️⃣ Programm aktualisieren
 
@@ -193,7 +198,8 @@ Die Einstellungen werden in `Maschinenraum/settings.json` gespeichert:
 {
   "photo_size_cm": 2.5,          // Fotogröße in cm
   "add_name": true,              // Name hinzufügen (Ja/Nein)
-  "add_name_default": true       // Standard für neue Arbeitsblätter
+  "add_name_default": true,      // Standard für neue Arbeitsblätter
+  "name_top_margin_cm": 2.0      // Abstand Name vom oberen Rand in cm
 }
 ```
 
