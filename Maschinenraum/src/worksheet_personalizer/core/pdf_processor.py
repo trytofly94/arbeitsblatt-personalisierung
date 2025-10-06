@@ -218,7 +218,10 @@ class PDFProcessor:
             # Load and process student photo
             photo = Image.open(student.photo_path)
             photo = ensure_rgb(photo)  # Convert to RGB if needed
-            photo = scale_photo(photo, self.photo_size_cm, effective_dpi)
+
+            # Keep original resolution - don't scale the pixels!
+            # We only scale the display size in the PDF
+            original_width, original_height = photo.size
 
             # Convert photo to ReportLab ImageReader with maximum quality
             photo_buffer = io.BytesIO()
@@ -226,8 +229,17 @@ class PDFProcessor:
             photo_buffer.seek(0)
             photo_reader = ImageReader(photo_buffer)
 
-            # Calculate position (top-right with percentage-based margins)
-            photo_width, photo_height = photo.size
+            # Calculate display size in PDF (in points, not pixels!)
+            photo_size_points = cm_to_points(self.photo_size_cm)
+
+            # Maintain aspect ratio for display size
+            aspect_ratio = original_width / original_height
+            if original_width >= original_height:
+                photo_width = photo_size_points
+                photo_height = photo_size_points / aspect_ratio
+            else:
+                photo_height = photo_size_points
+                photo_width = photo_size_points * aspect_ratio
 
             x_position = page_width - photo_width - margin_right
             y_position = page_height - photo_height - margin_top
