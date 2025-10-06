@@ -230,7 +230,8 @@ class PDFProcessor:
             photo_reader = ImageReader(photo_buffer)
 
             # Calculate display size in PDF (in points, not pixels!)
-            photo_size_points = cm_to_points(self.photo_size_cm)
+            # 1 cm = 28.35 points (PDF standard)
+            photo_size_points = self.photo_size_cm * 28.35
 
             # Maintain aspect ratio for display size
             aspect_ratio = original_width / original_height
