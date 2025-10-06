@@ -271,7 +271,7 @@ class PDFProcessor:
                     logger.debug(
                         f"Name text: '{text}' | Font: {self.font_name} | Size: {font_size:.1f}pt | "
                         f"Position: ({name_x:.1f}, {name_y:.1f}) | Text width: {text_width:.1f}pt | "
-                        f"Page width: {page_width:.1f}pt | Top margin: {self.name_top_margin_cm}cm ({name_top_margin_pt:.1f}pt)"
+                        f"Page width: {page_width:.1f}pt | Top margin: {self.name_top_margin_percent}% ({name_top_margin_pt:.1f}pt)"
                     )
 
                     c.drawString(name_x, name_y, text)
