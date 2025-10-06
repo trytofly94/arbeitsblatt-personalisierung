@@ -11,7 +11,9 @@ Dieses Tool ermöglicht es Lehrern, schnell und effizient personalisierte Arbeit
 - **🖱️ Ein-Klick-Bedienung**: Keine Kommandozeilen-Kenntnisse nötig
 - **👥 Multi-Klassen**: Unterstützt 3 Klassengruppen gleichzeitig (A, B, C)
 - **📄 Flexibles Format**: Unterstützt PDF und Bildformate (PNG, JPG)
-- **⚙️ Anpassbar**: Fotogröße, Name-Position, Schriftgröße konfigurierbar
+- **⚙️ Anpassbar**: Fotogröße und Name-Anzeige einfach konfigurierbar
+- **🎨 Professionell**: Norddruck-Schrift und dynamische Größenanpassung
+- **📏 Intelligent**: Automatische Skalierung für jede PDF-Größe
 - **🔄 Auto-Update**: Einfaches Update-System
 - **💾 Datenschutz**: Schülerfotos bleiben beim Update erhalten
 - **🇩🇪 Auf Deutsch**: Alle Meldungen in deutscher Sprache
@@ -47,10 +49,17 @@ Das war's! Die Installation läuft automatisch.
 **Doppelklick auf:** `Einstellungen.command`
 
 Hier können Sie anpassen:
-- 📏 Fotogröße (Standard: 2.5 cm)
-- 📍 Position des Namens (neben Foto, mittig, links, rechts)
-- 🔤 Schriftgröße
-- ✏️ Name hinzufügen (Ja/Nein)
+- 📏 **Fotogröße** (Standard: 2.5 cm)
+  - Wählen Sie aus 6 vordefinierten Größen (1.5 - 4.0 cm)
+  - Oder geben Sie eine eigene Größe ein
+- ✏️ **Name hinzufügen** (Ja/Nein)
+  - Format: "Name: Max Mustermann" neben dem Foto
+  - Verwendet Norddruck-Schrift für einheitliches Aussehen
+
+**Automatische Anpassungen:**
+- 🔤 Schriftgröße passt sich dynamisch an PDF-Größe an (2.25% der Höhe)
+- 📐 Abstände und Ränder skalieren automatisch mit dem Arbeitsblatt
+- 📝 Name erscheint immer links vom Foto in optimaler Position
 
 ### 5️⃣ Programm aktualisieren
 
@@ -62,20 +71,23 @@ Ihre Schülerfotos und Einstellungen bleiben dabei erhalten!
 
 ```
 arbeitsblatt-personalisierung/
-├── 🛠️ Maschinenraum/          # Technische Dateien (nicht anfassen)
-├── 👥 Schüler-A/               # Fotos Klasse A
-├── 👥 Schüler-B/               # Fotos Klasse B
-├── 👥 Schüler-C/               # Fotos Klasse C
-├── 📥 Input-A/                 # PDFs für Klasse A
-├── 📥 Input-B/                 # PDFs für Klasse B
-├── 📥 Input-C/                 # PDFs für Klasse C
-├── 📤 Ausgabe-A/               # Fertige Arbeitsblätter A
-├── 📤 Ausgabe-B/               # Fertige Arbeitsblätter B
-├── 📤 Ausgabe-C/               # Fertige Arbeitsblätter C
-├── ▶️ Start.command            # HIER KLICKEN zum Starten
-├── ⚙️ Einstellungen.command    # Einstellungen ändern
-├── 🔄 Update.command           # Programm aktualisieren
-└── 🏁 Ersteinrichtung.command  # Ersteinrichtung (einmalig)
+├── 🛠️ Maschinenraum/              # Technische Dateien (nicht anfassen)
+│   ├── src/                       # Python-Code
+│   ├── fonts/NORDDRUC.TTF         # Norddruck-Schriftart
+│   └── settings.json              # Einstellungen (automatisch verwaltet)
+├── 👥 Schüler-A/                   # Fotos Klasse A
+├── 👥 Schüler-B/                   # Fotos Klasse B
+├── 👥 Schüler-C/                   # Fotos Klasse C
+├── 📥 Input-A/                     # PDFs für Klasse A
+├── 📥 Input-B/                     # PDFs für Klasse B
+├── 📥 Input-C/                     # PDFs für Klasse C
+├── 📤 Ausgabe-A/                   # Fertige Arbeitsblätter A
+├── 📤 Ausgabe-B/                   # Fertige Arbeitsblätter B
+├── 📤 Ausgabe-C/                   # Fertige Arbeitsblätter C
+├── ▶️ Start.command                # HIER KLICKEN zum Starten
+├── ⚙️ Einstellungen.command        # Einstellungen ändern
+├── 🔄 Update.command               # Programm aktualisieren
+└── 🏁 Ersteinrichtung.command      # Ersteinrichtung (einmalig)
 ```
 
 ## 💡 Tipps
@@ -98,8 +110,12 @@ Sie können bis zu 3 Klassen gleichzeitig verwalten:
 
 1. Alle PDFs aus `Input-A/B/C` werden verarbeitet
 2. Für jeden Schüler wird ein personalisiertes Arbeitsblatt erstellt
+   - **Foto**: Erscheint oben rechts in der gewählten Größe
+   - **Name**: Optional "Name: Vorname Nachname" links vom Foto
+   - **Schrift**: Norddruck-Schriftart, automatisch skaliert
 3. Original-PDF wird nach `Ausgabe-X/Arbeitsblattname/` verschoben
 4. Alle personalisierten PDFs landen im gleichen Ordner
+5. Große "FERTIG!"-Meldung bestätigt den Abschluss
 
 ### Sicherheit Ihrer Daten
 
@@ -169,16 +185,19 @@ export WORKSHEET_PHOTO_SIZE=2.5
 export LOG_LEVEL=INFO
 ```
 
-### Config-Datei (Optional)
+### Einstellungsdatei
 
-Erstellen Sie eine `config.yaml` im Projekt-Verzeichnis:
+Die Einstellungen werden in `Maschinenraum/settings.json` gespeichert:
 
-```yaml
-photo_size_cm: 2.5  # Fotogröße (lange Seite) für A4-Druck
-photo_position: top-right
-add_name_default: false
-output_format: pdf
+```json
+{
+  "photo_size_cm": 2.5,          // Fotogröße in cm
+  "add_name": true,              // Name hinzufügen (Ja/Nein)
+  "add_name_default": true       // Standard für neue Arbeitsblätter
+}
 ```
+
+**Hinweis:** Verwenden Sie `Einstellungen.command` statt diese Datei manuell zu bearbeiten!
 
 ## Entwicklung
 
@@ -231,24 +250,29 @@ arbeitsblatt-personalisierung/
 
 ## Troubleshooting
 
+### Problem: Einstellungen werden nicht gespeichert
+
+**Lösung**: Stellen Sie sicher, dass `Maschinenraum/settings.json` existiert und beschreibbar ist. Die Datei wird automatisch erstellt beim ersten Start von `Einstellungen.command`.
+
+### Problem: Schriftgröße ist zu klein/groß
+
+**Lösung**: Die Schriftgröße wird automatisch als 2.25% der PDF-Höhe berechnet. Dies funktioniert für Standard-Arbeitsblätter optimal. Bei sehr großen oder kleinen PDFs passt sich die Schrift automatisch an.
+
 ### Problem: PDF-Generierung schlägt fehl
 
-**Lösung**: Stellen Sie sicher, dass `reportlab` korrekt installiert ist:
-```bash
-pip install --upgrade reportlab
-```
+**Lösung**: Führen Sie `Ersteinrichtung.command` erneut aus. Dies installiert alle benötigten Abhängigkeiten neu.
 
 ### Problem: Bilder werden nicht korrekt skaliert
 
-**Lösung**: Überprüfen Sie, dass die Eingabebilder eine ausreichende Auflösung haben (mindestens 300 DPI empfohlen)
+**Lösung**: Überprüfen Sie, dass die Eingabebilder eine ausreichende Auflösung haben (mindestens 300x400 Pixel empfohlen).
 
 ### Problem: "Module not found" Fehler
 
-**Lösung**: Aktivieren Sie die virtuelle Umgebung und installieren Sie die Dependencies erneut:
-```bash
-source venv/bin/activate  # oder venv\Scripts\activate auf Windows
-pip install -e .
-```
+**Lösung**: Führen Sie `Ersteinrichtung.command` erneut aus, um die virtuelle Umgebung und alle Dependencies neu zu installieren.
+
+### Problem: Terminal-Fenster schließt sich nicht
+
+**Lösung**: Dies ist ein Sicherheitsfeature bei Fehlern. Lesen Sie die Fehlermeldung und beheben Sie das Problem. Bei erfolgreicher Ausführung schließt sich das Fenster automatisch.
 
 ## Unterstützung
 
