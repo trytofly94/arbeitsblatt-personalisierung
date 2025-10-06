@@ -35,7 +35,7 @@ get_setting() {
     local key=$1
     local default=$2
     if [ -f "$SETTINGS_FILE" ]; then
-        python3 -c "import json; print(json.load(open('$SETTINGS_FILE')).get('$key', '$default'))" 2>/dev/null || echo "$default"
+        python3 -c "import json; val = json.load(open('$SETTINGS_FILE')).get('$key', '$default'); print(str(val).lower())" 2>/dev/null || echo "$default"
     else
         echo "$default"
     fi
@@ -54,7 +54,17 @@ if os.path.exists('$SETTINGS_FILE'):
     with open('$SETTINGS_FILE', 'r') as f:
         settings = json.load(f)
 
-settings['$key'] = $value
+# Konvertiere String-Werte zu korrekten Typen
+value = '$value'
+if value.lower() == 'true':
+    value = True
+elif value.lower() == 'false':
+    value = False
+elif value.replace('.', '', 1).isdigit():
+    # Zahlen (int oder float)
+    value = float(value) if '.' in value else int(value)
+
+settings['$key'] = value
 
 with open('$SETTINGS_FILE', 'w') as f:
     json.dump(settings, f, indent=2)
