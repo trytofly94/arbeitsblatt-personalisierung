@@ -27,8 +27,8 @@ fi
 # Aktiviere virtuelle Umgebung
 source venv/bin/activate > /dev/null 2>&1
 
-# Lade aktuelle Einstellungen
-SETTINGS_FILE="settings.json"
+# Lade aktuelle Einstellungen aus Maschinenraum
+SETTINGS_FILE="Maschinenraum/settings.json"
 
 # Funktion zum Lesen einer Einstellung
 get_setting() {
@@ -61,12 +61,13 @@ with open('$SETTINGS_FILE', 'w') as f:
 EOF
 }
 
-# Lade aktuelle Werte
-PHOTO_SIZE=$(get_setting "photo_size_cm" "2.5")
-ADD_NAME=$(get_setting "add_name_default" "false")
-
 # Hauptmenü-Schleife
 while true; do
+    # Lade aktuelle Werte neu bei jedem Schleifendurchlauf
+    PHOTO_SIZE=$(get_setting "photo_size_cm" "2.5")
+    # Versuche add_name_default, falls nicht vorhanden nutze add_name
+    ADD_NAME=$(get_setting "add_name_default" "$(get_setting 'add_name' 'true')")
+
     clear
     echo "================================================"
     echo "  Einstellungen"
@@ -182,9 +183,10 @@ while true; do
             echo "  • Name hinzufügen: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
             echo ""
 
-            # Speichere Einstellungen
+            # Speichere Einstellungen (beide Keys für Kompatibilität)
             set_setting "photo_size_cm" "$PHOTO_SIZE"
             set_setting "add_name_default" "$ADD_NAME"
+            set_setting "add_name" "$ADD_NAME"
 
             echo "✓ Einstellungen wurden gespeichert!"
             echo ""
