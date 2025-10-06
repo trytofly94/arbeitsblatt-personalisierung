@@ -60,6 +60,12 @@ Hier können Sie anpassen:
   - Fester Abstand vom oberen Blattrand
   - Wählen Sie aus 6 Voreinstellungen (0.5 - 3.0 cm) oder eigenen Wert
   - Unabhängig von der Foto-Position
+- ⬆️ **Foto-Abstand von oben** (Standard: Automatisch)
+  - Automatisch = ~2.5% der PDF-Höhe (passt sich an)
+  - Oder fester Wert von 0.0 cm (ganz oben) bis 2.5 cm
+- ➡️ **Foto-Abstand von rechts** (Standard: Automatisch)
+  - Automatisch = ~3.5% der PDF-Breite (passt sich an)
+  - Oder fester Wert von 0.0 cm (ganz rechts) bis 2.5 cm
 
 **Automatische Anpassungen:**
 - 🔤 Schriftgröße passt sich dynamisch an PDF-Größe an (2.25% der Höhe)
@@ -196,10 +202,12 @@ Die Einstellungen werden in `Maschinenraum/settings.json` gespeichert:
 
 ```json
 {
-  "photo_size_cm": 2.5,          // Fotogröße in cm
-  "add_name": true,              // Name hinzufügen (Ja/Nein)
-  "add_name_default": true,      // Standard für neue Arbeitsblätter
-  "name_top_margin_cm": 2.0      // Abstand Name vom oberen Rand in cm
+  "photo_size_cm": 2.5,           // Fotogröße in cm
+  "add_name": true,               // Name hinzufügen (Ja/Nein)
+  "add_name_default": true,       // Standard für neue Arbeitsblätter
+  "name_top_margin_cm": 2.0,      // Abstand Name vom oberen Rand in cm
+  "photo_top_margin_cm": 0.0,     // Abstand Foto von oben (0.0 = automatisch)
+  "photo_right_margin_cm": 0.0    // Abstand Foto von rechts (0.0 = automatisch)
 }
 ```
 

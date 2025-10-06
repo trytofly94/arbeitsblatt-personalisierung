@@ -114,10 +114,16 @@ class PDFProcessor:
         # Name vertical position: distance from top edge in cm (default 2.0 cm)
         self.name_top_margin_cm = self.settings_manager.get("name_top_margin_cm", 2.0)
 
+        # Photo vertical position: distance from top edge in cm (default 0.0 cm = dynamic margin)
+        self.photo_top_margin_cm = self.settings_manager.get("photo_top_margin_cm", 0.0)
+
+        # Photo horizontal position: distance from right edge in cm (default 0.0 cm = dynamic margin)
+        self.photo_right_margin_cm = self.settings_manager.get("photo_right_margin_cm", 0.0)
+
         logger.info(f"Initialized PDF processor for: {worksheet_path.name}")
         logger.debug(f"Settings: font={self.font_name}, photo_size={self.photo_size_cm}cm, "
                     f"font_size={'dynamic' if self.font_size is None else self.font_size}, "
-                    f"name_position={self.name_position}")
+                    f"name_position={self.name_position}, photo_top_margin={self.photo_top_margin_cm}cm")
 
     def _get_page_dimensions(self) -> tuple[float, float]:
         """Get the dimensions of the first page in the PDF.
@@ -218,8 +224,17 @@ class PDFProcessor:
             photo_buffer.seek(0)
             photo_reader = ImageReader(photo_buffer)
 
-            # Calculate position (top-right with dynamic margin)
+            # Calculate position (top-right with configurable or dynamic margin)
             photo_width, photo_height = photo.size
+
+            # Use custom margin if set (> 0), otherwise use dynamic margin
+            if self.photo_right_margin_cm > 0:
+                # Convert cm to points (1 cm = 28.35 points)
+                margin_right = (self.photo_right_margin_cm / 2.54) * 72
+
+            if self.photo_top_margin_cm > 0:
+                # Convert cm to points
+                margin_top = (self.photo_top_margin_cm / 2.54) * 72
 
             x_position = page_width - photo_width - margin_right
             y_position = page_height - photo_height - margin_top

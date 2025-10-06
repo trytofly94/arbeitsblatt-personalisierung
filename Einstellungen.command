@@ -78,6 +78,8 @@ while true; do
     # Versuche add_name_default, falls nicht vorhanden nutze add_name
     ADD_NAME=$(get_setting "add_name_default" "$(get_setting 'add_name' 'true')")
     NAME_TOP_MARGIN=$(get_setting "name_top_margin_cm" "2.0")
+    PHOTO_TOP_MARGIN=$(get_setting "photo_top_margin_cm" "0.0")
+    PHOTO_RIGHT_MARGIN=$(get_setting "photo_right_margin_cm" "0.0")
 
     clear
     echo "================================================"
@@ -89,10 +91,12 @@ while true; do
     echo "  1) Fotogröße: ${PHOTO_SIZE} cm"
     echo "  2) Name hinzufügen: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
     echo "  3) Name-Abstand von oben: ${NAME_TOP_MARGIN} cm"
+    echo "  4) Foto-Abstand von oben: $([ "${PHOTO_TOP_MARGIN}" = "0.0" ] && echo "Automatisch" || echo "${PHOTO_TOP_MARGIN} cm")"
+    echo "  5) Foto-Abstand von rechts: $([ "${PHOTO_RIGHT_MARGIN}" = "0.0" ] && echo "Automatisch" || echo "${PHOTO_RIGHT_MARGIN} cm")"
     echo ""
     echo "  0) Speichern und Beenden"
     echo ""
-    echo -n "Welche Einstellung möchten Sie ändern? (0-3): "
+    echo -n "Welche Einstellung möchten Sie ändern? (0-5): "
     read -r CHOICE
 
     case $CHOICE in
@@ -243,6 +247,108 @@ while true; do
             sleep 1
             ;;
 
+        4)
+            # Foto-Abstand von oben ändern
+            clear
+            echo "================================================"
+            echo "  Foto-Abstand von oben ändern"
+            echo "================================================"
+            echo ""
+            echo "Aktuell: $([ "${PHOTO_TOP_MARGIN}" = "0.0" ] && echo "Automatisch (~2.5% der Höhe)" || echo "${PHOTO_TOP_MARGIN} cm")"
+            echo ""
+            echo "Wählen Sie einen Abstand vom oberen Blattrand:"
+            echo ""
+            echo "  0) Automatisch (~2.5% der PDF-Höhe)"
+            echo "  1) 0.0 cm (ganz oben, kein Rand)"
+            echo "  2) 0.5 cm"
+            echo "  3) 1.0 cm"
+            echo "  4) 1.5 cm"
+            echo "  5) 2.0 cm"
+            echo "  6) 2.5 cm"
+            echo "  7) Eigener Wert"
+            echo ""
+            echo -n "Ihre Wahl (0-7): "
+            read -r SUB_CHOICE
+
+            case $SUB_CHOICE in
+                0) PHOTO_TOP_MARGIN="0.0" ;;
+                1) PHOTO_TOP_MARGIN="0.0" ;;
+                2) PHOTO_TOP_MARGIN="0.5" ;;
+                3) PHOTO_TOP_MARGIN="1.0" ;;
+                4) PHOTO_TOP_MARGIN="1.5" ;;
+                5) PHOTO_TOP_MARGIN="2.0" ;;
+                6) PHOTO_TOP_MARGIN="2.5" ;;
+                7)
+                    echo ""
+                    echo -n "Bitte Abstand in cm eingeben (z.B. 1.2): "
+                    read -r PHOTO_TOP_MARGIN
+                    ;;
+                *)
+                    echo "Ungültige Eingabe."
+                    sleep 1
+                    continue
+                    ;;
+            esac
+
+            # Speichere Einstellung sofort
+            set_setting "photo_top_margin_cm" "$PHOTO_TOP_MARGIN"
+
+            echo ""
+            echo "✓ Foto-Abstand von oben auf $([ "${PHOTO_TOP_MARGIN}" = "0.0" ] && echo "Automatisch" || echo "${PHOTO_TOP_MARGIN} cm") gesetzt"
+            sleep 1
+            ;;
+
+        5)
+            # Foto-Abstand von rechts ändern
+            clear
+            echo "================================================"
+            echo "  Foto-Abstand von rechts ändern"
+            echo "================================================"
+            echo ""
+            echo "Aktuell: $([ "${PHOTO_RIGHT_MARGIN}" = "0.0" ] && echo "Automatisch (~3.5% der Breite)" || echo "${PHOTO_RIGHT_MARGIN} cm")"
+            echo ""
+            echo "Wählen Sie einen Abstand vom rechten Blattrand:"
+            echo ""
+            echo "  0) Automatisch (~3.5% der PDF-Breite)"
+            echo "  1) 0.0 cm (ganz rechts, kein Rand)"
+            echo "  2) 0.5 cm"
+            echo "  3) 1.0 cm"
+            echo "  4) 1.5 cm"
+            echo "  5) 2.0 cm"
+            echo "  6) 2.5 cm"
+            echo "  7) Eigener Wert"
+            echo ""
+            echo -n "Ihre Wahl (0-7): "
+            read -r SUB_CHOICE
+
+            case $SUB_CHOICE in
+                0) PHOTO_RIGHT_MARGIN="0.0" ;;
+                1) PHOTO_RIGHT_MARGIN="0.0" ;;
+                2) PHOTO_RIGHT_MARGIN="0.5" ;;
+                3) PHOTO_RIGHT_MARGIN="1.0" ;;
+                4) PHOTO_RIGHT_MARGIN="1.5" ;;
+                5) PHOTO_RIGHT_MARGIN="2.0" ;;
+                6) PHOTO_RIGHT_MARGIN="2.5" ;;
+                7)
+                    echo ""
+                    echo -n "Bitte Abstand in cm eingeben (z.B. 1.2): "
+                    read -r PHOTO_RIGHT_MARGIN
+                    ;;
+                *)
+                    echo "Ungültige Eingabe."
+                    sleep 1
+                    continue
+                    ;;
+            esac
+
+            # Speichere Einstellung sofort
+            set_setting "photo_right_margin_cm" "$PHOTO_RIGHT_MARGIN"
+
+            echo ""
+            echo "✓ Foto-Abstand von rechts auf $([ "${PHOTO_RIGHT_MARGIN}" = "0.0" ] && echo "Automatisch" || echo "${PHOTO_RIGHT_MARGIN} cm") gesetzt"
+            sleep 1
+            ;;
+
         0)
             # Speichern und Beenden
             clear
@@ -255,6 +361,8 @@ while true; do
             echo "  • Fotogröße: ${PHOTO_SIZE} cm"
             echo "  • Name hinzufügen: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
             echo "  • Name-Abstand von oben: ${NAME_TOP_MARGIN} cm"
+            echo "  • Foto-Abstand von oben: $([ "${PHOTO_TOP_MARGIN}" = "0.0" ] && echo "Automatisch" || echo "${PHOTO_TOP_MARGIN} cm")"
+            echo "  • Foto-Abstand von rechts: $([ "${PHOTO_RIGHT_MARGIN}" = "0.0" ] && echo "Automatisch" || echo "${PHOTO_RIGHT_MARGIN} cm")"
             echo ""
 
             # Speichere Einstellungen (beide Keys für Kompatibilität)
@@ -262,6 +370,8 @@ while true; do
             set_setting "add_name_default" "$ADD_NAME"
             set_setting "add_name" "$ADD_NAME"
             set_setting "name_top_margin_cm" "$NAME_TOP_MARGIN"
+            set_setting "photo_top_margin_cm" "$PHOTO_TOP_MARGIN"
+            set_setting "photo_right_margin_cm" "$PHOTO_RIGHT_MARGIN"
 
             echo "✓ Einstellungen wurden gespeichert!"
             echo ""
