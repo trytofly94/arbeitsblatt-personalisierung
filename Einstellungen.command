@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Einstellungen.command - Einstellungen für die Arbeitsblatt-Personalisierung ändern
-# Dieses Script aktiviert die virtuelle Umgebung und startet das Einstellungs-Menü
+# Dieses Script bietet ein interaktives Menü zum Ändern der Einstellungen
 
 # Wechsle zum Script-Verzeichnis
 cd "$(dirname "$0")" || exit 1
+
+clear
 
 echo "================================================"
 echo "  Einstellungen - Arbeitsblatt-Personalisierung"
@@ -17,47 +19,187 @@ if [ ! -d "venv" ]; then
     echo ""
     echo "Bitte führen Sie zuerst 'Ersteinrichtung.command' aus."
     echo ""
-    sleep 3
-    osascript -e 'tell application "Terminal" to close first window' &
+    echo "Drücken Sie Enter zum Beenden..."
+    read
     exit 1
 fi
 
 # Aktiviere virtuelle Umgebung
-echo "🔧 Aktiviere virtuelle Umgebung..."
-source venv/bin/activate
+source venv/bin/activate > /dev/null 2>&1
 
-# Prüfe, ob Aktivierung erfolgreich war
-if [ $? -ne 0 ]; then
-    echo "❌ Fehler beim Aktivieren der virtuellen Umgebung!"
+# Lade aktuelle Einstellungen
+SETTINGS_FILE="settings.json"
+
+# Funktion zum Lesen einer Einstellung
+get_setting() {
+    local key=$1
+    local default=$2
+    if [ -f "$SETTINGS_FILE" ]; then
+        python3 -c "import json; print(json.load(open('$SETTINGS_FILE')).get('$key', '$default'))" 2>/dev/null || echo "$default"
+    else
+        echo "$default"
+    fi
+}
+
+# Funktion zum Setzen einer Einstellung
+set_setting() {
+    local key=$1
+    local value=$2
+    python3 << EOF
+import json
+import os
+
+settings = {}
+if os.path.exists('$SETTINGS_FILE'):
+    with open('$SETTINGS_FILE', 'r') as f:
+        settings = json.load(f)
+
+settings['$key'] = $value
+
+with open('$SETTINGS_FILE', 'w') as f:
+    json.dump(settings, f, indent=2)
+EOF
+}
+
+# Lade aktuelle Werte
+PHOTO_SIZE=$(get_setting "photo_size_cm" "2.5")
+ADD_NAME=$(get_setting "add_name_default" "false")
+
+# Hauptmenü-Schleife
+while true; do
+    clear
+    echo "================================================"
+    echo "  Einstellungen"
+    echo "================================================"
     echo ""
-    sleep 3
-    osascript -e 'tell application "Terminal" to close first window' &
-    exit 1
-fi
-
-echo "✓ Virtuelle Umgebung aktiviert"
-echo ""
-
-# Starte Einstellungs-Menü
-python -c "from worksheet_personalizer.settings_manager import interactive_settings_update; interactive_settings_update()"
-
-# Prüfe Exit-Code
-if [ $? -ne 0 ]; then
+    echo "Aktuelle Einstellungen:"
     echo ""
-    echo "❌ Fehler beim Ändern der Einstellungen!"
+    echo "  1) Fotogröße: ${PHOTO_SIZE} cm"
+    echo "  2) Name hinzufügen: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
     echo ""
-    sleep 3
-    osascript -e 'tell application "Terminal" to close first window' &
-    exit 1
-fi
+    echo "  0) Speichern und Beenden"
+    echo ""
+    echo -n "Welche Einstellung möchten Sie ändern? (0-2): "
+    read -r CHOICE
 
-# Deaktiviere virtuelle Umgebung
-deactivate
+    case $CHOICE in
+        1)
+            # Fotogröße ändern
+            clear
+            echo "================================================"
+            echo "  Fotogröße ändern"
+            echo "================================================"
+            echo ""
+            echo "Aktuelle Größe: ${PHOTO_SIZE} cm"
+            echo ""
+            echo "Wählen Sie eine Fotogröße:"
+            echo ""
+            echo "  1) 1.5 cm (Klein)"
+            echo "  2) 2.0 cm (Mittel-Klein)"
+            echo "  3) 2.5 cm (Standard)"
+            echo "  4) 3.0 cm (Mittel-Groß)"
+            echo "  5) 3.5 cm (Groß)"
+            echo "  6) 4.0 cm (Sehr Groß)"
+            echo "  7) Benutzerdefiniert"
+            echo ""
+            echo -n "Ihre Wahl (1-7): "
+            read -r SIZE_CHOICE
 
-echo ""
-echo "✓ Einstellungen erfolgreich aktualisiert!"
-echo ""
-echo "Fenster schließt sich in 3 Sekunden..."
-sleep 3
-osascript -e 'tell application "Terminal" to close first window' &
-exit 0
+            case $SIZE_CHOICE in
+                1) PHOTO_SIZE="1.5" ;;
+                2) PHOTO_SIZE="2.0" ;;
+                3) PHOTO_SIZE="2.5" ;;
+                4) PHOTO_SIZE="3.0" ;;
+                5) PHOTO_SIZE="3.5" ;;
+                6) PHOTO_SIZE="4.0" ;;
+                7)
+                    echo ""
+                    echo -n "Geben Sie die Fotogröße in cm ein (0.5 - 10.0): "
+                    read -r CUSTOM_SIZE
+                    PHOTO_SIZE="$CUSTOM_SIZE"
+                    ;;
+                *)
+                    echo ""
+                    echo "❌ Ungültige Eingabe!"
+                    sleep 2
+                    continue
+                    ;;
+            esac
+            echo ""
+            echo "✓ Fotogröße auf ${PHOTO_SIZE} cm gesetzt"
+            sleep 1
+            ;;
+
+        2)
+            # Name hinzufügen ändern
+            clear
+            echo "================================================"
+            echo "  Name auf Arbeitsblatt hinzufügen"
+            echo "================================================"
+            echo ""
+            echo "Aktuell: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
+            echo ""
+            echo "Soll der Name des Schülers auf dem Arbeitsblatt"
+            echo "angezeigt werden?"
+            echo ""
+            echo "  1) Ja - Name wird hinzugefügt"
+            echo "  2) Nein - Nur Foto"
+            echo ""
+            echo -n "Ihre Wahl (1-2): "
+            read -r NAME_CHOICE
+
+            case $NAME_CHOICE in
+                1)
+                    ADD_NAME="true"
+                    echo ""
+                    echo "✓ Name wird künftig hinzugefügt"
+                    ;;
+                2)
+                    ADD_NAME="false"
+                    echo ""
+                    echo "✓ Nur Foto wird verwendet"
+                    ;;
+                *)
+                    echo ""
+                    echo "❌ Ungültige Eingabe!"
+                    sleep 2
+                    continue
+                    ;;
+            esac
+            sleep 1
+            ;;
+
+        0)
+            # Speichern und Beenden
+            clear
+            echo "================================================"
+            echo "  Einstellungen speichern"
+            echo "================================================"
+            echo ""
+            echo "Folgende Einstellungen werden gespeichert:"
+            echo ""
+            echo "  • Fotogröße: ${PHOTO_SIZE} cm"
+            echo "  • Name hinzufügen: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
+            echo ""
+
+            # Speichere Einstellungen
+            set_setting "photo_size_cm" "$PHOTO_SIZE"
+            set_setting "add_name_default" "$ADD_NAME"
+
+            echo "✓ Einstellungen wurden gespeichert!"
+            echo ""
+            echo "Fenster schließt sich in 2 Sekunden..."
+            sleep 2
+
+            deactivate
+            osascript -e 'tell application "Terminal" to close first window' &
+            exit 0
+            ;;
+
+        *)
+            echo ""
+            echo "❌ Ungültige Eingabe! Bitte wählen Sie 0-2."
+            sleep 2
+            ;;
+    esac
+done

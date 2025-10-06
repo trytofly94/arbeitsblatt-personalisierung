@@ -58,12 +58,20 @@ fi
 deactivate
 
 echo ""
-echo "================================================"
-echo "  Verarbeitung abgeschlossen!"
-echo "================================================"
 echo ""
-echo "Fenster schließt sich in 3 Sekunden..."
-sleep 3
+echo ""
+# Große bunte FERTIG!-Nachricht
+echo -e "\033[1;32m"
+echo "  ███████╗███████╗██████╗ ████████╗██╗ ██████╗ ██╗"
+echo "  ██╔════╝██╔════╝██╔══██╗╚══██╔══╝██║██╔════╝ ██║"
+echo "  █████╗  █████╗  ██████╔╝   ██║   ██║██║  ███╗██║"
+echo "  ██╔══╝  ██╔══╝  ██╔══██╗   ██║   ██║██║   ██║╚═╝"
+echo "  ██║     ███████╗██║  ██║   ██║   ██║╚██████╔╝██╗"
+echo "  ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝"
+echo -e "\033[0m"
+echo ""
+echo ""
+sleep 2
 
 # Schließe Terminal-Fenster
 osascript -e 'tell application "Terminal" to close first window' &

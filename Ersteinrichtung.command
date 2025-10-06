@@ -26,8 +26,8 @@ else
     echo "Bitte installieren Sie Python 3.9 oder höher von:"
     echo "https://www.python.org/downloads/"
     echo ""
-    sleep 5
-    osascript -e 'tell application "Terminal" to close first window' &
+    echo "Drücken Sie Enter zum Beenden..."
+    read
     exit 1
 fi
 
@@ -46,8 +46,8 @@ if [ "$PYTHON_MAJOR" -lt 3 ] || { [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR"
     echo "Bitte installieren Sie eine neuere Python-Version von:"
     echo "https://www.python.org/downloads/"
     echo ""
-    sleep 5
-    osascript -e 'tell application "Terminal" to close first window' &
+    echo "Drücken Sie Enter zum Beenden..."
+    read
     exit 1
 fi
 
@@ -74,8 +74,8 @@ if [ -d "venv" ]; then
         echo "❌ Fehler beim Aktualisieren der Abhängigkeiten!"
         deactivate
         echo ""
-        sleep 3
-        osascript -e 'tell application "Terminal" to close first window' &
+        echo "Drücken Sie Enter zum Beenden..."
+        read
         exit 1
     fi
 
@@ -101,8 +101,8 @@ $PYTHON_CMD -m venv venv
 if [ $? -ne 0 ]; then
     echo "❌ Fehler beim Erstellen der virtuellen Umgebung!"
     echo ""
-    sleep 3
-    osascript -e 'tell application "Terminal" to close first window' &
+    echo "Drücken Sie Enter zum Beenden..."
+    read
     exit 1
 fi
 
@@ -116,8 +116,8 @@ source venv/bin/activate
 if [ $? -ne 0 ]; then
     echo "❌ Fehler beim Aktivieren der virtuellen Umgebung!"
     echo ""
-    sleep 3
-    osascript -e 'tell application "Terminal" to close first window' &
+    echo "Drücken Sie Enter zum Beenden..."
+    read
     exit 1
 fi
 
@@ -132,8 +132,8 @@ if [ $? -ne 0 ]; then
     echo "❌ Fehler beim Aktualisieren von pip!"
     deactivate
     echo ""
-    sleep 3
-    osascript -e 'tell application "Terminal" to close first window' &
+    echo "Drücken Sie Enter zum Beenden..."
+    read
     exit 1
 fi
 
@@ -156,8 +156,8 @@ if [ $? -ne 0 ]; then
     echo "  pip install -e 'Maschinenraum[dev]'"
     echo ""
     deactivate
-    sleep 5
-    osascript -e 'tell application "Terminal" to close first window' &
+    echo "Drücken Sie Enter zum Beenden..."
+    read
     exit 1
 fi
 
