@@ -111,6 +111,9 @@ class PDFProcessor:
         self.font_size = self.settings_manager.get("font_size", None)
         self.name_position: NamePosition = self.settings_manager.get("name_position", "beside_photo")
 
+        # Name vertical position: distance from top edge in cm (default 2.0 cm)
+        self.name_top_margin_cm = self.settings_manager.get("name_top_margin_cm", 2.0)
+
         logger.info(f"Initialized PDF processor for: {worksheet_path.name}")
         logger.debug(f"Settings: font={self.font_name}, photo_size={self.photo_size_cm}cm, "
                     f"font_size={'dynamic' if self.font_size is None else self.font_size}, "
@@ -248,18 +251,21 @@ class PDFProcessor:
                     text = f"Name: {student.name}"
                     text_width = c.stringWidth(text, self.font_name, font_size)
 
-                    # Calculate name position, ensuring it doesn't go off the left edge
+                    # Calculate horizontal position, ensuring it doesn't go off the left edge
                     name_x = x_position - text_width - text_photo_gap
                     # Ensure minimum margin on the left (3.5% like margin_right)
                     min_x = page_width * 0.035
                     name_x = max(name_x, min_x)
 
-                    name_y = y_position + (photo_height / 2) - (font_size / 3)
+                    # Calculate vertical position: fixed distance from top edge
+                    # Convert cm to points (1 cm = 28.35 points at standard DPI)
+                    name_top_margin_pt = (self.name_top_margin_cm / 2.54) * 72  # cm to inches to points
+                    name_y = page_height - name_top_margin_pt
 
                     logger.debug(
                         f"Name text: '{text}' | Font: {self.font_name} | Size: {font_size:.1f}pt | "
                         f"Position: ({name_x:.1f}, {name_y:.1f}) | Text width: {text_width:.1f}pt | "
-                        f"Page width: {page_width:.1f}pt | Min X: {min_x:.1f}pt"
+                        f"Page width: {page_width:.1f}pt | Top margin: {self.name_top_margin_cm}cm ({name_top_margin_pt:.1f}pt)"
                     )
 
                     c.drawString(name_x, name_y, text)

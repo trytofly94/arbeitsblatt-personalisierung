@@ -77,6 +77,7 @@ while true; do
     PHOTO_SIZE=$(get_setting "photo_size_cm" "2.5")
     # Versuche add_name_default, falls nicht vorhanden nutze add_name
     ADD_NAME=$(get_setting "add_name_default" "$(get_setting 'add_name' 'true')")
+    NAME_TOP_MARGIN=$(get_setting "name_top_margin_cm" "2.0")
 
     clear
     echo "================================================"
@@ -87,10 +88,11 @@ while true; do
     echo ""
     echo "  1) Fotogröße: ${PHOTO_SIZE} cm"
     echo "  2) Name hinzufügen: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
+    echo "  3) Name-Abstand von oben: ${NAME_TOP_MARGIN} cm"
     echo ""
     echo "  0) Speichern und Beenden"
     echo ""
-    echo -n "Welche Einstellung möchten Sie ändern? (0-2): "
+    echo -n "Welche Einstellung möchten Sie ändern? (0-3): "
     read -r CHOICE
 
     case $CHOICE in
@@ -190,6 +192,57 @@ while true; do
             sleep 1
             ;;
 
+        3)
+            # Name-Abstand von oben ändern
+            clear
+            echo "================================================"
+            echo "  Name-Abstand von oben ändern"
+            echo "================================================"
+            echo ""
+            echo "Aktuell: ${NAME_TOP_MARGIN} cm"
+            echo ""
+            echo "Wählen Sie einen Abstand vom oberen Blattrand:"
+            echo ""
+            echo "  1) 0.5 cm (Sehr nah)"
+            echo "  2) 1.0 cm (Nah)"
+            echo "  3) 1.5 cm (Mittel-Nah)"
+            echo "  4) 2.0 cm (Standard)"
+            echo "  5) 2.5 cm (Weit)"
+            echo "  6) 3.0 cm (Sehr weit)"
+            echo "  7) Benutzerdefiniert"
+            echo ""
+            echo -n "Ihre Wahl (1-7): "
+            read -r MARGIN_CHOICE
+
+            case $MARGIN_CHOICE in
+                1) NAME_TOP_MARGIN="0.5" ;;
+                2) NAME_TOP_MARGIN="1.0" ;;
+                3) NAME_TOP_MARGIN="1.5" ;;
+                4) NAME_TOP_MARGIN="2.0" ;;
+                5) NAME_TOP_MARGIN="2.5" ;;
+                6) NAME_TOP_MARGIN="3.0" ;;
+                7)
+                    echo ""
+                    echo -n "Geben Sie den Abstand in cm ein (0.5 - 5.0): "
+                    read -r CUSTOM_MARGIN
+                    NAME_TOP_MARGIN="$CUSTOM_MARGIN"
+                    ;;
+                *)
+                    echo ""
+                    echo "❌ Ungültige Eingabe!"
+                    sleep 2
+                    continue
+                    ;;
+            esac
+
+            # Speichere Einstellung sofort
+            set_setting "name_top_margin_cm" "$NAME_TOP_MARGIN"
+
+            echo ""
+            echo "✓ Name-Abstand auf ${NAME_TOP_MARGIN} cm gesetzt"
+            sleep 1
+            ;;
+
         0)
             # Speichern und Beenden
             clear
@@ -201,12 +254,14 @@ while true; do
             echo ""
             echo "  • Fotogröße: ${PHOTO_SIZE} cm"
             echo "  • Name hinzufügen: $([ "$ADD_NAME" = "true" ] && echo "Ja" || echo "Nein")"
+            echo "  • Name-Abstand von oben: ${NAME_TOP_MARGIN} cm"
             echo ""
 
             # Speichere Einstellungen (beide Keys für Kompatibilität)
             set_setting "photo_size_cm" "$PHOTO_SIZE"
             set_setting "add_name_default" "$ADD_NAME"
             set_setting "add_name" "$ADD_NAME"
+            set_setting "name_top_margin_cm" "$NAME_TOP_MARGIN"
 
             echo "✓ Einstellungen wurden gespeichert!"
             echo ""
@@ -220,7 +275,7 @@ while true; do
 
         *)
             echo ""
-            echo "❌ Ungültige Eingabe! Bitte wählen Sie 0-2."
+            echo "❌ Ungültige Eingabe! Bitte wählen Sie 0-3."
             sleep 2
             ;;
     esac
