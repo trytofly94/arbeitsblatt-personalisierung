@@ -243,7 +243,13 @@ class PDFProcessor:
                     # Position name to the left of the photo with dynamic formatting
                     text = f"Name: {student.name}"
                     text_width = c.stringWidth(text, self.font_name, font_size)
+
+                    # Calculate name position, ensuring it doesn't go off the left edge
                     name_x = x_position - text_width - text_photo_gap
+                    # Ensure minimum margin on the left (3.5% like margin_right)
+                    min_x = page_width * 0.035
+                    name_x = max(name_x, min_x)
+
                     name_y = y_position + (photo_height / 2) - (font_size / 3)
                     c.drawString(name_x, name_y, text)
 
