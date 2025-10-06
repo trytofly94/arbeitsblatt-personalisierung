@@ -17,8 +17,8 @@ if [ ! -d "venv" ]; then
     echo ""
     echo "Bitte führen Sie zuerst 'Ersteinrichtung.command' aus."
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -30,8 +30,8 @@ source venv/bin/activate
 if [ $? -ne 0 ]; then
     echo "❌ Fehler beim Aktivieren der virtuellen Umgebung!"
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -49,8 +49,8 @@ if [ $? -ne 0 ]; then
     echo ""
     echo "❌ Fehler bei der Verarbeitung!"
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -62,3 +62,9 @@ echo "================================================"
 echo "  Verarbeitung abgeschlossen!"
 echo "================================================"
 echo ""
+echo "Fenster schließt sich in 3 Sekunden..."
+sleep 3
+
+# Schließe Terminal-Fenster
+osascript -e 'tell application "Terminal" to close first window' &
+exit 0

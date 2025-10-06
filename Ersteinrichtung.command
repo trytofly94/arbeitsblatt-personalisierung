@@ -26,8 +26,8 @@ else
     echo "Bitte installieren Sie Python 3.9 oder höher von:"
     echo "https://www.python.org/downloads/"
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 5
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -46,8 +46,8 @@ if [ "$PYTHON_MAJOR" -lt 3 ] || { [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR"
     echo "Bitte installieren Sie eine neuere Python-Version von:"
     echo "https://www.python.org/downloads/"
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 5
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -57,52 +57,41 @@ echo ""
 if [ -d "venv" ]; then
     echo "⚠️  Virtuelle Umgebung existiert bereits!"
     echo ""
-    echo "Möchten Sie die Umgebung neu erstellen? (j/N)"
-    read -r RECREATE
+    echo "ℹ️  Verwende bestehende virtuelle Umgebung und aktualisiere Abhängigkeiten..."
+    echo ""
 
-    if [ "$RECREATE" = "j" ] || [ "$RECREATE" = "J" ]; then
-        echo ""
-        echo "🗑️  Lösche alte virtuelle Umgebung..."
-        rm -rf venv
-        echo "✓ Alte Umgebung gelöscht"
-        echo ""
+    # Aktiviere existierende Umgebung
+    source venv/bin/activate
+
+    # Aktualisiere Dependencies
+    echo "📦 Aktualisiere Abhängigkeiten..."
+    pip install --upgrade pip > /dev/null 2>&1
+    pip install -e "Maschinenraum[dev]" > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "✓ Abhängigkeiten aktualisiert"
     else
-        echo ""
-        echo "ℹ️  Verwende bestehende virtuelle Umgebung"
-        echo ""
-
-        # Aktiviere existierende Umgebung
-        source venv/bin/activate
-
-        # Aktualisiere Dependencies
-        echo "📦 Aktualisiere Abhängigkeiten..."
-        pip install --upgrade pip > /dev/null 2>&1
-        pip install -e "Maschinenraum[dev]" > /dev/null 2>&1
-
-        if [ $? -eq 0 ]; then
-            echo "✓ Abhängigkeiten aktualisiert"
-        else
-            echo "❌ Fehler beim Aktualisieren der Abhängigkeiten!"
-            deactivate
-            echo ""
-            echo "Drücken Sie Enter zum Beenden..."
-            read
-            exit 1
-        fi
-
+        echo "❌ Fehler beim Aktualisieren der Abhängigkeiten!"
         deactivate
-
         echo ""
-        echo "================================================"
-        echo "  Aktualisierung abgeschlossen!"
-        echo "================================================"
-        echo ""
-        echo "Sie können nun 'Start.command' ausführen."
-        echo ""
-        echo "Drücken Sie Enter zum Beenden..."
-        read
-        exit 0
+        sleep 3
+        osascript -e 'tell application "Terminal" to close first window' &
+        exit 1
     fi
+
+    deactivate
+
+    echo ""
+    echo "================================================"
+    echo "  Aktualisierung abgeschlossen!"
+    echo "================================================"
+    echo ""
+    echo "Sie können nun 'Start.command' ausführen."
+    echo ""
+    echo "Fenster schließt sich in 3 Sekunden..."
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
+    exit 0
 fi
 
 # Erstelle virtuelle Umgebung
@@ -112,8 +101,8 @@ $PYTHON_CMD -m venv venv
 if [ $? -ne 0 ]; then
     echo "❌ Fehler beim Erstellen der virtuellen Umgebung!"
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -127,8 +116,8 @@ source venv/bin/activate
 if [ $? -ne 0 ]; then
     echo "❌ Fehler beim Aktivieren der virtuellen Umgebung!"
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -143,8 +132,8 @@ if [ $? -ne 0 ]; then
     echo "❌ Fehler beim Aktualisieren von pip!"
     deactivate
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -167,8 +156,8 @@ if [ $? -ne 0 ]; then
     echo "  pip install -e 'Maschinenraum[dev]'"
     echo ""
     deactivate
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 5
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -187,7 +176,9 @@ echo ""
 echo "  • Start.command         - Arbeitsblätter verarbeiten"
 echo "  • Einstellungen.command - Einstellungen ändern"
 echo ""
-echo "Drücken Sie Enter zum Beenden..."
-read
+echo "Fenster schließt sich in 5 Sekunden..."
+sleep 5
 
+# Schließe Terminal-Fenster
+osascript -e 'tell application "Terminal" to close first window' &
 exit 0

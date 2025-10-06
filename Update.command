@@ -16,8 +16,8 @@ if ! command -v git &> /dev/null; then
     echo ""
     echo "Bitte installieren Sie Git von: https://git-scm.com/download/mac"
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    sleep 5
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 1
 fi
 
@@ -39,8 +39,9 @@ if [ "$LOCAL" = "$REMOTE" ]; then
     echo ""
     echo "Keine Updates verfügbar."
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    echo "Fenster schließt sich in 3 Sekunden..."
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 0
 fi
 
@@ -65,8 +66,9 @@ if [[ ! $REPLY =~ ^[Jj]$ ]]; then
     echo ""
     echo "❌ Update abgebrochen."
     echo ""
-    echo "Drücken Sie Enter zum Beenden..."
-    read
+    echo "Fenster schließt sich in 3 Sekunden..."
+    sleep 3
+    osascript -e 'tell application "Terminal" to close first window' &
     exit 0
 fi
 
@@ -135,8 +137,14 @@ else
     echo "Bitte wenden Sie sich an den Support oder versuchen Sie:"
     echo "  1. Das Projekt neu zu klonen"
     echo "  2. Ihre Schülerfotos vorher zu sichern"
+    echo ""
+    sleep 5
+    osascript -e 'tell application "Terminal" to close first window' &
+    exit 1
 fi
 
 echo ""
-echo "Drücken Sie Enter zum Beenden..."
-read
+echo "Fenster schließt sich in 5 Sekunden..."
+sleep 5
+osascript -e 'tell application "Terminal" to close first window' &
+exit 0
