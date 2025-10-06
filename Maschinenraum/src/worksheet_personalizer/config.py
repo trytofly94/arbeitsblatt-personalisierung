@@ -22,7 +22,7 @@ A4_HEIGHT_CM: float = 29.7  # DIN A4 height in centimeters
 
 # DPI settings for different formats
 DPI_PDF: int = 72  # Standard PDF DPI (PostScript points)
-DPI_IMAGE: int = 300  # High-quality image DPI
+DPI_IMAGE: int = 1200  # Maximum quality image DPI for professional printing
 
 # Font settings
 FONT_NAME: str = "Helvetica"  # Default font for PDF text
