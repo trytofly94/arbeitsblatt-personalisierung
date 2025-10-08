@@ -9,9 +9,11 @@ Dieses Tool ermöglicht es Lehrern, schnell und effizient personalisierte Arbeit
 ### ✨ Features
 
 - **🖱️ Ein-Klick-Bedienung**: Keine Kommandozeilen-Kenntnisse nötig
+- **🔍 Interaktive Vorschau**: Sehen Sie das Ergebnis vor der Verarbeitung (NEU!)
+- **⚙️ Live-Einstellungen**: Foto-Position, Größe und Name während der Vorschau anpassen (NEU!)
 - **👥 Multi-Klassen**: Unterstützt 3 Klassengruppen gleichzeitig (A, B, C)
 - **📄 Flexibles Format**: Unterstützt PDF und Bildformate (PNG, JPG)
-- **⚙️ Anpassbar**: Fotogröße, Name-Anzeige und vertikale Position konfigurierbar
+- **📍 4 Position-Presets**: Foto in jeder Ecke positionierbar (oben/unten, links/rechts) (NEU!)
 - **🎨 Professionell**: Reparierte Norddruck-Schrift mit korrektem Unicode-Mapping
 - **📏 Intelligent**: Automatische Skalierung für jede PDF-Größe
 - **🎯 Präzise**: Fester Abstand vom oberen Blattrand (konsistent über alle PDFs)
@@ -43,7 +45,14 @@ Das war's! Die Installation läuft automatisch.
 
 3. **Doppelklick auf:** `Start.command`
 
-4. **Fertig!** → Personalisierte Arbeitsblätter finden Sie in `Ausgabe-A/`
+4. **🔍 Interaktive Vorschau**
+   - Das System zeigt automatisch eine Vorschau mit dem ersten Schüler
+   - Überprüfen Sie Foto-Position, Größe und Name-Anzeige
+   - **ENTER** - Fortfahren mit allen Schülern
+   - **M** - Einstellungen-Menü öffnen (Foto-Position, Größe, Name ein/aus)
+   - **ESC** - Abbrechen
+
+5. **Fertig!** → Personalisierte Arbeitsblätter finden Sie in `Ausgabe-A/`
 
 ### 4️⃣ Einstellungen ändern (optional)
 
