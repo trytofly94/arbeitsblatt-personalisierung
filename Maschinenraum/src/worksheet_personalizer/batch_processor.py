@@ -14,8 +14,11 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 
 from worksheet_personalizer.core.pdf_processor import PDFProcessor
 from worksheet_personalizer.core.image_processor import ImageProcessor
+from worksheet_personalizer.core.preview_generator import PreviewGenerator
 from worksheet_personalizer.models.student import Student
 from worksheet_personalizer.settings_manager import SettingsManager
+from worksheet_personalizer.utils.interaction_handler import InteractionHandler
+from worksheet_personalizer.utils.settings_menu import SettingsMenu
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -40,15 +43,17 @@ class BatchProcessor:
     # Supported photo formats
     PHOTO_FORMATS = {".jpg", ".jpeg", ".png"}
 
-    def __init__(self, base_path: Path) -> None:
+    def __init__(self, base_path: Path, preview_enabled: bool = True) -> None:
         """Initialize batch processor.
 
         Args:
             base_path: Base directory containing Input-X, Schüler-X, Ausgabe-X folders
+            preview_enabled: Whether to show interactive preview before processing
         """
         self.base_path = base_path
         self.settings_manager = SettingsManager()
         self.groups = ["A", "B", "C"]
+        self.preview_enabled = preview_enabled
 
         logger.info(f"Initialized batch processor at: {base_path}")
 
@@ -181,6 +186,114 @@ class BatchProcessor:
             console.print(f"[yellow]⚠️  Konnte {worksheet_path.name} nicht verschieben: {e}[/yellow]")
             logger.error(f"Error moving worksheet: {e}", exc_info=True)
 
+    def _show_preview_for_worksheet(
+        self, worksheet_path: Path, students: List[Student]
+    ) -> bool:
+        """Show preview for a worksheet and handle user interaction.
+
+        Generates a preview using the first student, opens it in the system
+        viewer, and waits for user input (ESC/ENTER/MENU).
+
+        Args:
+            worksheet_path: Path to the worksheet to preview
+            students: List of students (first one used for preview)
+
+        Returns:
+            True to continue processing, False to cancel
+        """
+        console.print(f"\n[bold cyan]🔍 Generiere Vorschau für {worksheet_path.name}...[/bold cyan]")
+
+        # Create preview generator
+        try:
+            preview_gen = PreviewGenerator(
+                worksheet_path=worksheet_path,
+                students=students,
+                settings_manager=self.settings_manager,
+            )
+        except ValueError as e:
+            console.print(f"[red]❌ Fehler beim Erstellen der Vorschau: {e}[/red]")
+            return False
+
+        # Create interaction handler
+        interaction = InteractionHandler(console)
+
+        # Create settings menu
+        settings_menu = SettingsMenu(self.settings_manager, console)
+
+        preview_path = None
+        viewer_process = None
+
+        try:
+            # Main preview loop
+            while True:
+                # Generate preview (or regenerate after settings change)
+                try:
+                    preview_path = preview_gen.generate_preview()
+                    console.print(
+                        f"[green]✓ Vorschau erstellt mit Schüler: {students[0].name}[/green]"
+                    )
+                except Exception as e:
+                    console.print(f"[red]❌ Fehler bei Vorschau-Generierung: {e}[/red]")
+                    logger.error(f"Preview generation failed: {e}", exc_info=True)
+
+                    # Ask if user wants to continue anyway
+                    from rich.prompt import Confirm
+
+                    if Confirm.ask(
+                        "Möchten Sie trotzdem fortfahren?", default=False
+                    ):
+                        return True
+                    else:
+                        return False
+
+                # Open in viewer
+                try:
+                    viewer_process = interaction.open_in_viewer(preview_path)
+                except Exception as e:
+                    console.print(f"[yellow]⚠️  Fehler beim Öffnen der Vorschau: {e}[/yellow]")
+                    logger.warning(f"Failed to open preview: {e}")
+
+                # Wait for user input
+                action = interaction.wait_for_input()
+
+                if action == "esc":
+                    console.print("[yellow]Vorgang abgebrochen.[/yellow]")
+                    return False
+
+                elif action == "enter":
+                    console.print("[green]✓ Fortfahren mit allen Schülern...[/green]")
+                    return True
+
+                elif action == "menu":
+                    # Close viewer while in menu
+                    if viewer_process:
+                        interaction.close_viewer(viewer_process)
+                        viewer_process = None
+
+                    # Show settings menu
+                    changes_made = settings_menu.show()
+
+                    # If changes were made, regenerate preview
+                    if changes_made:
+                        console.print(
+                            "\n[cyan]Einstellungen geändert, generiere neue Vorschau...[/cyan]"
+                        )
+                        # Clean up old preview
+                        if preview_path:
+                            preview_gen.cleanup_preview(preview_path)
+                            preview_path = None
+                        # Loop will regenerate preview
+                    else:
+                        # No changes, just reopen the preview
+                        pass
+
+        finally:
+            # Clean up
+            if viewer_process:
+                interaction.close_viewer(viewer_process)
+            if preview_path:
+                preview_gen.cleanup_preview(preview_path)
+
     def process_group(self, group: str) -> None:
         """Process all worksheets for a specific group.
 
@@ -229,6 +342,17 @@ class BatchProcessor:
         ) as progress:
 
             for worksheet_path in worksheets:
+                # Show preview if enabled
+                if self.preview_enabled:
+                    continue_processing = self._show_preview_for_worksheet(
+                        worksheet_path, students
+                    )
+                    if not continue_processing:
+                        console.print(
+                            f"[yellow]⚠️  Überspringe {worksheet_path.name}[/yellow]"
+                        )
+                        continue
+
                 worksheet_name = worksheet_path.stem
                 output_subfolder = self._create_output_folder(output_folder, worksheet_name)
 
