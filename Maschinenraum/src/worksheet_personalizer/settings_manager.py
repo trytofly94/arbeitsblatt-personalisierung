@@ -9,6 +9,8 @@ import logging
 from pathlib import Path
 from typing import Literal
 
+from .config import PHOTO_POSITIONS
+
 logger = logging.getLogger(__name__)
 
 # Settings file location
@@ -122,6 +124,103 @@ class SettingsManager:
         """
         self.settings.update(new_settings)
         self._save_settings(self.settings)
+
+    def get_photo_position(self) -> str:
+        """Get the current photo position preset.
+
+        Returns the position as a string (e.g., 'top-right', 'top-left').
+        If not set in settings, derives it from current margin values,
+        defaulting to 'top-right'.
+
+        Returns:
+            Position preset name ('top-right', 'top-left', 'bottom-right', 'bottom-left')
+        """
+        # If explicitly set in settings, use it
+        if "photo_position" in self.settings:
+            return self.settings["photo_position"]
+
+        # Otherwise, derive from existing margin values
+        has_top = "photo_top_margin_percent" in self.settings
+        has_right = "photo_right_margin_percent" in self.settings
+        has_bottom = "photo_bottom_margin_percent" in self.settings
+        has_left = "photo_left_margin_percent" in self.settings
+
+        if has_top and has_right:
+            position = "top-right"
+        elif has_top and has_left:
+            position = "top-left"
+        elif has_bottom and has_right:
+            position = "bottom-right"
+        elif has_bottom and has_left:
+            position = "bottom-left"
+        else:
+            # Default to top-right if unclear
+            position = "top-right"
+
+        # Save the derived position for future use
+        self.settings["photo_position"] = position
+        self._save_settings(self.settings)
+
+        return position
+
+    def set_photo_position(self, position: str) -> None:
+        """Set the photo position preset.
+
+        This updates both the position string and the corresponding margin
+        percentages in settings.json.
+
+        Args:
+            position: Position preset ('top-right', 'top-left', 'bottom-right', 'bottom-left')
+
+        Raises:
+            ValueError: If position is not a valid preset
+        """
+        if position not in PHOTO_POSITIONS:
+            valid_positions = ", ".join(PHOTO_POSITIONS.keys())
+            raise ValueError(
+                f"Invalid position '{position}'. Must be one of: {valid_positions}"
+            )
+
+        # Clear all margin values first
+        margin_keys = [
+            "photo_top_margin_percent",
+            "photo_right_margin_percent",
+            "photo_bottom_margin_percent",
+            "photo_left_margin_percent",
+        ]
+        for key in margin_keys:
+            self.settings.pop(key, None)
+
+        # Set the position string
+        self.settings["photo_position"] = position
+
+        # Set the corresponding margin values
+        margins = self.get_position_margins(position)
+        self.settings.update(margins)
+
+        # Save immediately
+        self._save_settings(self.settings)
+        logger.info(f"Photo position set to '{position}'")
+
+    def get_position_margins(self, position: str) -> dict[str, float]:
+        """Convert a position preset to margin values.
+
+        Args:
+            position: Position preset name
+
+        Returns:
+            Dictionary with margin percentage values
+
+        Raises:
+            ValueError: If position is not a valid preset
+        """
+        if position not in PHOTO_POSITIONS:
+            valid_positions = ", ".join(PHOTO_POSITIONS.keys())
+            raise ValueError(
+                f"Invalid position '{position}'. Must be one of: {valid_positions}"
+            )
+
+        return PHOTO_POSITIONS[position].copy()
 
 
 def interactive_settings_update() -> None:
