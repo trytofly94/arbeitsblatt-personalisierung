@@ -31,6 +31,36 @@ FONT_SIZE: int = 12  # Default font size in points
 # Default output directory
 DEFAULT_OUTPUT_DIR: str = "./output"
 
+# Photo position presets (margin percentages for different corner positions)
+PHOTO_POSITIONS: dict[str, dict[str, float]] = {
+    "top-right": {
+        "photo_top_margin_percent": 1.5,
+        "photo_right_margin_percent": 3.5,
+    },
+    "top-left": {
+        "photo_top_margin_percent": 1.5,
+        "photo_left_margin_percent": 3.5,
+    },
+    "bottom-right": {
+        "photo_bottom_margin_percent": 1.5,
+        "photo_right_margin_percent": 3.5,
+    },
+    "bottom-left": {
+        "photo_bottom_margin_percent": 1.5,
+        "photo_left_margin_percent": 3.5,
+    },
+}
+
+# System viewer commands for opening files
+VIEWER_COMMANDS: dict[str, str] = {
+    "darwin": "open",  # macOS
+    "win32": "start",  # Windows
+    "linux": "xdg-open",  # Linux
+}
+
+# Preview settings
+PREVIEW_TIMEOUT_SECONDS: int = 300  # 5 minutes timeout for preview
+
 
 class Settings(BaseSettings):
     """Application settings with environment variable support.
