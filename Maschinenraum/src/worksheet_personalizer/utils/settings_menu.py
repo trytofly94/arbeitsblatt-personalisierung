@@ -144,9 +144,7 @@ class SettingsMenu:
         """
         current_position = self.settings_manager.get_photo_position()
 
-        self.console.print(
-            f"\nCurrent position: [green]{current_position}[/green]\n"
-        )
+        self.console.print(f"\nCurrent position: [green]{current_position}[/green]\n")
 
         # Display available positions
         self.console.print("[bold]Available positions:[/bold]")
@@ -193,9 +191,7 @@ class SettingsMenu:
         """
         current_size = self.settings_manager.get("photo_size_cm", 2.5)
 
-        self.console.print(
-            f"\nCurrent size: [green]{current_size} cm[/green]\n"
-        )
+        self.console.print(f"\nCurrent size: [green]{current_size} cm[/green]\n")
 
         # Get new size with validation
         try:

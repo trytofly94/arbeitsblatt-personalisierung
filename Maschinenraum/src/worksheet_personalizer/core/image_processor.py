@@ -72,13 +72,19 @@ class ImageProcessor:
         # Load settings from settings manager
         self.settings_manager = SettingsManager()
         self.photo_size_cm = self.settings_manager.get("photo_size_cm", PHOTO_SIZE_CM)
-        self.photo_margin_cm = self.settings_manager.get("photo_margin_cm", PHOTO_MARGIN_CM)
+        self.photo_margin_cm = self.settings_manager.get(
+            "photo_margin_cm", PHOTO_MARGIN_CM
+        )
         self.font_size = self.settings_manager.get("font_size", FONT_SIZE)
-        self.name_position: NamePosition = self.settings_manager.get("name_position", "beside_photo")
+        self.name_position: NamePosition = self.settings_manager.get(
+            "name_position", "beside_photo"
+        )
 
         logger.info(f"Initialized image processor for: {worksheet_path.name}")
-        logger.debug(f"Settings: photo_size={self.photo_size_cm}cm, margin={self.photo_margin_cm}cm, "
-                    f"font_size={self.font_size}, name_position={self.name_position}")
+        logger.debug(
+            f"Settings: photo_size={self.photo_size_cm}cm, margin={self.photo_margin_cm}cm, "
+            f"font_size={self.font_size}, name_position={self.name_position}"
+        )
 
     def _load_worksheet(self) -> Image.Image:
         """Load the worksheet image and preserve DPI information.

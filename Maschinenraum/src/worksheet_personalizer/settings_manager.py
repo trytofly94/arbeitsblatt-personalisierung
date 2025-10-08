@@ -47,7 +47,7 @@ class SettingsManager:
             return self._create_default_settings()
 
         try:
-            with open(self.settings_file, "r", encoding="utf-8") as f:
+            with open(self.settings_file, encoding="utf-8") as f:
                 settings = json.load(f)
             logger.debug(f"Loaded settings from {self.settings_file}")
             return settings
@@ -66,7 +66,7 @@ class SettingsManager:
             "add_name": True,
             "name_position": "beside_photo",
             "font_size": 12,
-            "photo_margin_cm": 0.5
+            "photo_margin_cm": 0.5,
         }
 
         self._save_settings(default_settings)
@@ -226,22 +226,32 @@ class SettingsManager:
 def interactive_settings_update() -> None:
     """Interactive CLI for updating settings."""
     from rich.console import Console
-    from rich.prompt import Prompt, Confirm
+    from rich.prompt import Confirm, Prompt
 
     console = Console()
     manager = SettingsManager()
 
-    console.print("\n[bold cyan]⚙️  Einstellungen für Arbeitsblatt-Personalisierung[/bold cyan]\n")
+    console.print(
+        "\n[bold cyan]⚙️  Einstellungen für Arbeitsblatt-Personalisierung[/bold cyan]\n"
+    )
 
     current_settings = manager.get_all()
 
     # Display current settings
     console.print("[bold]Aktuelle Einstellungen:[/bold]")
-    console.print(f"  📏 Fotogröße: [green]{current_settings['photo_size_cm']} cm[/green]")
-    console.print(f"  ✏️  Name hinzufügen: [green]{'Ja' if current_settings['add_name'] else 'Nein'}[/green]")
-    console.print(f"  📍 Name-Position: [green]{current_settings['name_position']}[/green]")
+    console.print(
+        f"  📏 Fotogröße: [green]{current_settings['photo_size_cm']} cm[/green]"
+    )
+    console.print(
+        f"  ✏️  Name hinzufügen: [green]{'Ja' if current_settings['add_name'] else 'Nein'}[/green]"
+    )
+    console.print(
+        f"  📍 Name-Position: [green]{current_settings['name_position']}[/green]"
+    )
     console.print(f"  🔤 Schriftgröße: [green]{current_settings['font_size']}[/green]")
-    console.print(f"  📐 Foto-Abstand: [green]{current_settings['photo_margin_cm']} cm[/green]\n")
+    console.print(
+        f"  📐 Foto-Abstand: [green]{current_settings['photo_margin_cm']} cm[/green]\n"
+    )
 
     # Ask if user wants to change settings
     if not Confirm.ask("Möchten Sie die Einstellungen ändern?"):
@@ -250,26 +260,24 @@ def interactive_settings_update() -> None:
 
     # Photo size
     photo_size = Prompt.ask(
-        "Fotogröße (lange Seite in cm)",
-        default=str(current_settings['photo_size_cm'])
+        "Fotogröße (lange Seite in cm)", default=str(current_settings["photo_size_cm"])
     )
     try:
         photo_size = float(photo_size)
         if photo_size <= 0 or photo_size > 10:
             console.print("[red]Ungültige Größe! Verwende Standardwert.[/red]")
-            photo_size = current_settings['photo_size_cm']
+            photo_size = current_settings["photo_size_cm"]
     except ValueError:
         console.print("[red]Ungültige Eingabe! Verwende Standardwert.[/red]")
-        photo_size = current_settings['photo_size_cm']
+        photo_size = current_settings["photo_size_cm"]
 
     # Add name
     add_name = Confirm.ask(
-        "Namen auf Arbeitsblatt hinzufügen?",
-        default=current_settings['add_name']
+        "Namen auf Arbeitsblatt hinzufügen?", default=current_settings["add_name"]
     )
 
     # Name position (only if add_name is True)
-    name_position = current_settings['name_position']
+    name_position = current_settings["name_position"]
     if add_name:
         console.print("\n[bold]Name-Position:[/bold]")
         console.print("  1) neben dem Foto (rechts)")
@@ -278,46 +286,38 @@ def interactive_settings_update() -> None:
         console.print("  4) rechts auf dem Arbeitsblatt")
 
         position_choice = Prompt.ask(
-            "Wählen Sie eine Position",
-            choices=["1", "2", "3", "4"],
-            default="1"
+            "Wählen Sie eine Position", choices=["1", "2", "3", "4"], default="1"
         )
 
-        position_map = {
-            "1": "beside_photo",
-            "2": "center",
-            "3": "left",
-            "4": "right"
-        }
+        position_map = {"1": "beside_photo", "2": "center", "3": "left", "4": "right"}
         name_position = position_map[position_choice]
 
     # Font size
     font_size = Prompt.ask(
-        "Schriftgröße für Namen",
-        default=str(current_settings['font_size'])
+        "Schriftgröße für Namen", default=str(current_settings["font_size"])
     )
     try:
         font_size = int(font_size)
         if font_size < 6 or font_size > 48:
             console.print("[red]Ungültige Größe! Verwende Standardwert.[/red]")
-            font_size = current_settings['font_size']
+            font_size = current_settings["font_size"]
     except ValueError:
         console.print("[red]Ungültige Eingabe! Verwende Standardwert.[/red]")
-        font_size = current_settings['font_size']
+        font_size = current_settings["font_size"]
 
     # Photo margin
     photo_margin = Prompt.ask(
         "Abstand des Fotos vom Rand (in cm)",
-        default=str(current_settings['photo_margin_cm'])
+        default=str(current_settings["photo_margin_cm"]),
     )
     try:
         photo_margin = float(photo_margin)
         if photo_margin < 0 or photo_margin > 5:
             console.print("[red]Ungültiger Abstand! Verwende Standardwert.[/red]")
-            photo_margin = current_settings['photo_margin_cm']
+            photo_margin = current_settings["photo_margin_cm"]
     except ValueError:
         console.print("[red]Ungültige Eingabe! Verwende Standardwert.[/red]")
-        photo_margin = current_settings['photo_margin_cm']
+        photo_margin = current_settings["photo_margin_cm"]
 
     # Update settings
     new_settings = {
@@ -325,11 +325,13 @@ def interactive_settings_update() -> None:
         "add_name": add_name,
         "name_position": name_position,
         "font_size": font_size,
-        "photo_margin_cm": photo_margin
+        "photo_margin_cm": photo_margin,
     }
 
     manager.update(new_settings)
 
-    console.print("\n[bold green]✓ Einstellungen erfolgreich gespeichert![/bold green]\n")
+    console.print(
+        "\n[bold green]✓ Einstellungen erfolgreich gespeichert![/bold green]\n"
+    )
     console.print("[dim]Drücken Sie Enter zum Beenden...[/dim]")
     input()

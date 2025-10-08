@@ -104,12 +104,8 @@ class InteractionHandler:
 
         except Exception as e:
             logger.error(f"Failed to open file in viewer: {e}")
-            self.console.print(
-                f"[red]Error opening viewer: {e}[/red]"
-            )
-            self.console.print(
-                f"[yellow]Please open manually: {file_path}[/yellow]"
-            )
+            self.console.print(f"[red]Error opening viewer: {e}[/red]")
+            self.console.print(f"[yellow]Please open manually: {file_path}[/yellow]")
             return None
 
     def wait_for_input(self) -> str:

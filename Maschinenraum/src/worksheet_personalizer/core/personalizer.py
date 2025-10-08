@@ -257,7 +257,9 @@ class WorksheetPersonalizer:
                 try:
                     viewer_process = interaction.open_in_viewer(preview_path)
                 except Exception as e:
-                    self.console.print(f"[yellow]⚠️  Error opening preview: {e}[/yellow]")
+                    self.console.print(
+                        f"[yellow]⚠️  Error opening preview: {e}[/yellow]"
+                    )
                     logger.warning(f"Failed to open preview: {e}")
 
                 # Wait for user input
@@ -268,7 +270,9 @@ class WorksheetPersonalizer:
                     return False
 
                 elif action == "enter":
-                    self.console.print("[green]✓ Continuing with all students...[/green]")
+                    self.console.print(
+                        "[green]✓ Continuing with all students...[/green]"
+                    )
                     return True
 
                 elif action == "menu":
