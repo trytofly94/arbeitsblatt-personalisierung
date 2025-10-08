@@ -46,11 +46,13 @@ Das war's! Die Installation läuft automatisch.
 3. **Doppelklick auf:** `Start.command`
 
 4. **🔍 Interaktive Vorschau**
-   - Das System zeigt automatisch eine Vorschau mit dem ersten Schüler
-   - Überprüfen Sie Foto-Position, Größe und Name-Anzeige
-   - **ENTER** - Fortfahren mit allen Schülern
-   - **M** - Einstellungen-Menü öffnen (Foto-Position, Größe, Name ein/aus)
-   - **ESC** - Abbrechen
+   - Das System öffnet automatisch eine **Quick Look Vorschau** mit dem ersten Schüler
+   - Die Vorschau schwebt über dem Terminal - **Sie müssen kein Fenster wechseln!**
+   - Drücken Sie einfach eine Taste im Terminal:
+     - **ENTER** - Fortfahren mit allen Schülern
+     - **M** - Einstellungen-Menü öffnen (Foto-Position, Größe, Name ein/aus)
+     - **ESC** - Abbrechen
+   - Die Vorschau schließt sich automatisch bei Ihrer Eingabe
 
 5. **Fertig!** → Personalisierte Arbeitsblätter finden Sie in `Ausgabe-A/`
 

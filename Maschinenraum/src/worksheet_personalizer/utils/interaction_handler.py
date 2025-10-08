@@ -52,8 +52,11 @@ class InteractionHandler:
     def open_in_viewer(self, file_path: Path) -> Optional[subprocess.Popen[bytes]]:
         """Open a file in the system's default viewer.
 
-        Detects the operating system and uses the appropriate command
-        to open the file in a non-blocking manner.
+        On macOS, uses Quick Look API (qlmanage) to display a floating preview
+        window that doesn't steal focus from the terminal. This allows the user
+        to see the preview and press keys without switching windows.
+
+        On other platforms, opens the file with the default viewer.
 
         Args:
             file_path: Path to the file to open
@@ -67,36 +70,45 @@ class InteractionHandler:
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        # Get viewer command for current platform
         platform = sys.platform
-        viewer_cmd = VIEWER_COMMANDS.get(platform)
-
-        if not viewer_cmd:
-            self.console.print(
-                f"[yellow]Warning: No viewer command configured for platform '{platform}'[/yellow]"
-            )
-            self.console.print(f"[yellow]Preview file location: {file_path}[/yellow]")
-            return None
 
         try:
-            # Open file in system viewer (non-blocking)
-            if platform == "win32":
-                # Windows needs special handling
+            # macOS: Use Quick Look API for floating preview without focus stealing
+            if platform == "darwin":
+                process = subprocess.Popen(
+                    ["qlmanage", "-p", str(file_path)],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                logger.info(f"Opened Quick Look preview: {file_path}")
+
+            # Windows needs special handling
+            elif platform == "win32":
                 process = subprocess.Popen(
                     ["cmd", "/c", "start", "", str(file_path)],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
+                logger.info(f"Opened preview in default viewer: {file_path}")
+
+            # Linux and other platforms
             else:
-                # macOS and Linux
+                viewer_cmd = VIEWER_COMMANDS.get(platform)
+                if not viewer_cmd:
+                    self.console.print(
+                        f"[yellow]Warning: No viewer command configured for platform '{platform}'[/yellow]"
+                    )
+                    self.console.print(f"[yellow]Preview file location: {file_path}[/yellow]")
+                    return None
+
                 process = subprocess.Popen(
                     [viewer_cmd, str(file_path)],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
+                logger.info(f"Opened preview in viewer: {file_path}")
 
             self._viewer_process = process
-            logger.info(f"Opened preview in viewer: {file_path}")
 
             # Give the viewer a moment to start
             time.sleep(0.5)
