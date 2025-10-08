@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 from rich.console import Console
 
@@ -46,9 +47,9 @@ class InteractionHandler:
             console: Rich Console instance for formatted output
         """
         self.console = console
-        self._viewer_process: subprocess.Popen[bytes] | None = None
+        self._viewer_process: Optional[subprocess.Popen[bytes]] = None
 
-    def open_in_viewer(self, file_path: Path) -> subprocess.Popen[bytes] | None:
+    def open_in_viewer(self, file_path: Path) -> Optional[subprocess.Popen[bytes]]:
         """Open a file in the system's default viewer.
 
         Detects the operating system and uses the appropriate command
@@ -183,7 +184,7 @@ class InteractionHandler:
                 )
 
     def close_viewer(
-        self, process: subprocess.Popen[bytes] | None = None, timeout: int = 5
+        self, process: Optional[subprocess.Popen[bytes]] = None, timeout: int = 5
     ) -> None:
         """Close the viewer process gracefully.
 

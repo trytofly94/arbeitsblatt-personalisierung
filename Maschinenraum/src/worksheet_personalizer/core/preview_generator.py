@@ -7,6 +7,7 @@ using the first student in a list as an example.
 import logging
 import tempfile
 from pathlib import Path
+from typing import Optional, Union
 
 from worksheet_personalizer.core.image_processor import ImageProcessor
 from worksheet_personalizer.core.pdf_processor import PDFProcessor
@@ -50,7 +51,7 @@ class PreviewGenerator:
         self.worksheet_path = worksheet_path
         self.students = students
         self.settings_manager = settings_manager
-        self._preview_path: Path | None = None
+        self._preview_path: Optional[Path] = None
 
     def generate_preview(self) -> Path:
         """Generate a preview worksheet using the first student.
@@ -94,7 +95,7 @@ class PreviewGenerator:
                 self._preview_path.unlink()
             raise RuntimeError(f"Preview generation failed: {e}") from e
 
-    def cleanup_preview(self, preview_path: Path | None = None) -> None:
+    def cleanup_preview(self, preview_path: Optional[Path] = None) -> None:
         """Delete the temporary preview file.
 
         Args:
@@ -112,7 +113,7 @@ class PreviewGenerator:
             except Exception as e:
                 logger.warning(f"Failed to clean up preview file: {e}")
 
-    def _get_processor(self) -> PDFProcessor | ImageProcessor:
+    def _get_processor(self) -> Union[PDFProcessor, ImageProcessor]:
         """Get the appropriate processor based on worksheet format.
 
         Returns:
@@ -122,16 +123,17 @@ class PreviewGenerator:
             ValueError: If worksheet format is not supported
         """
         suffix = self.worksheet_path.suffix.lower()
+        add_name = self.settings_manager.get("add_name", True)
 
         if suffix == ".pdf":
             return PDFProcessor(
                 worksheet_path=self.worksheet_path,
-                settings_manager=self.settings_manager,
+                add_name=add_name,
             )
         elif suffix in {".png", ".jpg", ".jpeg"}:
             return ImageProcessor(
                 worksheet_path=self.worksheet_path,
-                settings_manager=self.settings_manager,
+                add_name=add_name,
             )
         else:
             raise ValueError(

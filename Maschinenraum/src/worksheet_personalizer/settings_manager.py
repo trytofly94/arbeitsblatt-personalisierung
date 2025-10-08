@@ -259,11 +259,12 @@ def interactive_settings_update() -> None:
         return
 
     # Photo size
-    photo_size = Prompt.ask(
+    photo_size_str = Prompt.ask(
         "Fotogröße (lange Seite in cm)", default=str(current_settings["photo_size_cm"])
     )
+    photo_size: float
     try:
-        photo_size = float(photo_size)
+        photo_size = float(photo_size_str)
         if photo_size <= 0 or photo_size > 10:
             console.print("[red]Ungültige Größe! Verwende Standardwert.[/red]")
             photo_size = current_settings["photo_size_cm"]
@@ -293,11 +294,12 @@ def interactive_settings_update() -> None:
         name_position = position_map[position_choice]
 
     # Font size
-    font_size = Prompt.ask(
+    font_size_str = Prompt.ask(
         "Schriftgröße für Namen", default=str(current_settings["font_size"])
     )
+    font_size: int
     try:
-        font_size = int(font_size)
+        font_size = int(font_size_str)
         if font_size < 6 or font_size > 48:
             console.print("[red]Ungültige Größe! Verwende Standardwert.[/red]")
             font_size = current_settings["font_size"]
@@ -306,12 +308,13 @@ def interactive_settings_update() -> None:
         font_size = current_settings["font_size"]
 
     # Photo margin
-    photo_margin = Prompt.ask(
+    photo_margin_str = Prompt.ask(
         "Abstand des Fotos vom Rand (in cm)",
         default=str(current_settings["photo_margin_cm"]),
     )
+    photo_margin: float
     try:
-        photo_margin = float(photo_margin)
+        photo_margin = float(photo_margin_str)
         if photo_margin < 0 or photo_margin > 5:
             console.print("[red]Ungültiger Abstand! Verwende Standardwert.[/red]")
             photo_margin = current_settings["photo_margin_cm"]
