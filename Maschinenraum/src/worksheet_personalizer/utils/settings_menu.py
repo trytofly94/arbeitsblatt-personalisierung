@@ -7,7 +7,7 @@ personalization settings during preview mode.
 import logging
 
 from rich.console import Console
-from rich.prompt import Confirm, FloatPrompt
+from rich.prompt import FloatPrompt
 from rich.table import Table
 
 from worksheet_personalizer.settings_manager import SettingsManager
@@ -178,13 +178,29 @@ class SettingsMenu:
         current_value = self.settings_manager.get("add_name", True)
 
         self.console.print(
-            f"\nCurrent setting: [green]{'Yes' if current_value else 'No'}[/green]"
+            f"\nCurrent setting: [green]{'Yes' if current_value else 'No'}[/green]\n"
         )
 
-        new_value = Confirm.ask(
-            "Add student names to worksheets?",
-            default=current_value,
-        )
+        self.console.print("[bold]Add student names to worksheets?[/bold]")
+        self.console.print("  1) Yes")
+        self.console.print("  2) No")
+        self.console.print()
+
+        # Get user choice with single-key input
+        if READCHAR_AVAILABLE:
+            self.console.print("[dim]Press 1 or 2...[/dim]", end="")
+            choice = self._wait_for_number_key(["1", "2"])
+            self.console.print(f" {choice}")
+        else:
+            # Fallback
+            from rich.prompt import Prompt
+            choice = Prompt.ask(
+                "Select an option",
+                choices=["1", "2"],
+                default="1" if current_value else "2",
+            )
+
+        new_value = choice == "1"
 
         if new_value != current_value:
             self.settings_manager.set("add_name", new_value)
