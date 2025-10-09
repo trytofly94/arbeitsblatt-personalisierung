@@ -7,13 +7,21 @@ personalization settings during preview mode.
 import logging
 
 from rich.console import Console
-from rich.prompt import Confirm, FloatPrompt, Prompt
+from rich.prompt import Confirm, FloatPrompt
 from rich.table import Table
 
 from worksheet_personalizer.config import PHOTO_POSITIONS
 from worksheet_personalizer.settings_manager import SettingsManager
 
 logger = logging.getLogger(__name__)
+
+# Try to import readchar for single-key input
+try:
+    import readchar
+    READCHAR_AVAILABLE = True
+except ImportError:
+    READCHAR_AVAILABLE = False
+    logger.warning("readchar not available, using Enter-based input")
 
 
 class SettingsMenu:
@@ -61,15 +69,23 @@ class SettingsMenu:
             self.console.print("  1) Toggle name on worksheet")
             self.console.print("  2) Change photo position")
             self.console.print("  3) Adjust photo size")
-            self.console.print("  4) Back to preview")
+            self.console.print("  4) Change text position")
+            self.console.print("  5) Back to preview")
             self.console.print()
 
-            # Get user choice
-            choice = Prompt.ask(
-                "Select an option",
-                choices=["1", "2", "3", "4"],
-                default="4",
-            )
+            # Get user choice with single-key input
+            if READCHAR_AVAILABLE:
+                self.console.print("[dim]Press a number key (1-5)...[/dim]", end="")
+                choice = self._wait_for_number_key(["1", "2", "3", "4", "5"])
+                self.console.print(f" {choice}")
+            else:
+                # Fallback to Enter-based input
+                from rich.prompt import Prompt
+                choice = Prompt.ask(
+                    "Select an option",
+                    choices=["1", "2", "3", "4", "5"],
+                    default="5",
+                )
 
             if choice == "1":
                 if self._toggle_add_name():
@@ -81,10 +97,28 @@ class SettingsMenu:
                 if self._adjust_photo_size():
                     changes_made = True
             elif choice == "4":
+                if self._select_text_position():
+                    changes_made = True
+            elif choice == "5":
                 # Exit menu
                 break
 
         return changes_made
+
+    def _wait_for_number_key(self, valid_keys: list[str]) -> str:
+        """Wait for user to press a number key.
+
+        Args:
+            valid_keys: List of valid key choices (e.g., ["1", "2", "3"])
+
+        Returns:
+            The pressed key as a string
+        """
+        while True:
+            key = readchar.readkey()
+            if key in valid_keys:
+                return key
+            # Ignore invalid keys and wait for a valid one
 
     def _display_current_settings(self) -> None:
         """Display current settings in a formatted table."""
@@ -97,12 +131,14 @@ class SettingsMenu:
         # Get current settings
         add_name = self.settings_manager.get("add_name", True)
         photo_size = self.settings_manager.get("photo_size_cm", 2.5)
-        position = self.settings_manager.get_photo_position()
+        photo_position = self.settings_manager.get_photo_position()
+        text_position = self.settings_manager.get("name_position", "beside_photo")
 
         # Add rows
         table.add_row("Add Name", "Yes" if add_name else "No")
-        table.add_row("Photo Position", position)
+        table.add_row("Photo Position", photo_position)
         table.add_row("Photo Size", f"{photo_size} cm")
+        table.add_row("Text Position", text_position.replace("_", " ").title())
 
         self.console.print(table)
 
@@ -155,12 +191,20 @@ class SettingsMenu:
 
         self.console.print()
 
-        # Get user choice
-        choice = Prompt.ask(
-            "Select a position",
-            choices=[str(i) for i in range(1, len(position_list) + 1)],
-            default=str(position_list.index(current_position) + 1),
-        )
+        # Get user choice with single-key input
+        valid_choices = [str(i) for i in range(1, len(position_list) + 1)]
+        if READCHAR_AVAILABLE:
+            self.console.print(f"[dim]Press a number key (1-{len(position_list)})...[/dim]", end="")
+            choice = self._wait_for_number_key(valid_choices)
+            self.console.print(f" {choice}")
+        else:
+            # Fallback
+            from rich.prompt import Prompt
+            choice = Prompt.ask(
+                "Select a position",
+                choices=valid_choices,
+                default=str(position_list.index(current_position) + 1),
+            )
 
         # Convert choice to position
         selected_position = position_list[int(choice) - 1]
@@ -223,5 +267,61 @@ class SettingsMenu:
 
         except (ValueError, EOFError) as e:
             self.console.print(f"[red]Invalid input: {e}[/red]")
+            input("\nPress Enter to continue...")
+            return False
+
+    def _select_text_position(self) -> bool:
+        """Allow user to select text/name position.
+
+        Returns:
+            True if position was changed, False otherwise
+        """
+        current_position = self.settings_manager.get("name_position", "beside_photo")
+
+        self.console.print(f"\nCurrent text position: [green]{current_position.replace('_', ' ').title()}[/green]\n")
+
+        # Available text positions
+        text_positions = {
+            "1": ("beside_photo", "Beside Photo (left of photo)"),
+            "2": ("center", "Center (middle of page)"),
+            "3": ("left", "Left Side"),
+            "4": ("right", "Right Side"),
+        }
+
+        # Display available positions
+        self.console.print("[bold]Available text positions:[/bold]")
+        for key, (pos_value, description) in text_positions.items():
+            marker = "→" if pos_value == current_position else " "
+            self.console.print(f"  {marker} {key}) {description}")
+
+        self.console.print()
+
+        # Get user choice with single-key input
+        if READCHAR_AVAILABLE:
+            self.console.print("[dim]Press a number key (1-4)...[/dim]", end="")
+            choice = self._wait_for_number_key(["1", "2", "3", "4"])
+            self.console.print(f" {choice}")
+        else:
+            # Fallback
+            from rich.prompt import Prompt
+            choice = Prompt.ask(
+                "Select a position",
+                choices=["1", "2", "3", "4"],
+                default="1",
+            )
+
+        # Get selected position
+        selected_position, description = text_positions[choice]
+
+        if selected_position != current_position:
+            self.settings_manager.set("name_position", selected_position)
+            self.console.print(
+                f"[green]✓ Text position updated to: {description}[/green]"
+            )
+            logger.info(f"Text position changed to: {selected_position}")
+            input("\nPress Enter to continue...")
+            return True
+        else:
+            self.console.print("[yellow]No change made[/yellow]")
             input("\nPress Enter to continue...")
             return False

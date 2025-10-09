@@ -5,5 +5,6 @@
   "name_top_margin_cm": 2.0,
   "photo_top_margin_percent": 1.5,
   "name_top_margin_percent": 5.0,
-  "photo_right_margin_percent": 3.5
+  "photo_right_margin_percent": 3.5,
+  "photo_position": "top-right"
 }
