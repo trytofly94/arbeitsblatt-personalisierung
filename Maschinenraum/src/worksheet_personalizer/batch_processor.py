@@ -311,11 +311,14 @@ class BatchProcessor:
             if preview_path:
                 preview_gen.cleanup_preview(preview_path)
 
-    def process_group(self, group: str) -> None:
+    def process_group(self, group: str) -> tuple[int, int]:
         """Process all worksheets for a specific group.
 
         Args:
             group: Group identifier (A, B, or C)
+
+        Returns:
+            Tuple of (processed_count, cancelled_count)
         """
         input_folder, students_folder, output_folder = self._get_folder_paths(group)
 
@@ -326,7 +329,7 @@ class BatchProcessor:
             console.print(
                 f"[yellow]⚠️  Input-Ordner nicht gefunden: {input_folder}[/yellow]"
             )
-            return
+            return (0, 0)
 
         if not output_folder.exists():
             output_folder.mkdir(parents=True, exist_ok=True)
@@ -338,7 +341,7 @@ class BatchProcessor:
             console.print(
                 f"[yellow]⚠️  Keine Schülerfotos gefunden in {students_folder}[/yellow]"
             )
-            return
+            return (0, 0)
 
         # Find all worksheets in Input folder
         worksheets = [
@@ -351,7 +354,7 @@ class BatchProcessor:
             console.print(
                 f"[yellow]⚠️  Keine Arbeitsblätter gefunden in {input_folder}[/yellow]"
             )
-            return
+            return (0, 0)
 
         console.print(f"[green]✓ {len(students)} Schüler gefunden[/green]")
         console.print(
@@ -359,6 +362,9 @@ class BatchProcessor:
         )
 
         # Process each worksheet
+        processed_count = 0
+        cancelled_count = 0
+
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -375,8 +381,9 @@ class BatchProcessor:
                     )
                     if not continue_processing:
                         console.print(
-                            f"[yellow]⚠️  Überspringe {worksheet_path.name}[/yellow]"
+                            f"[yellow]⚠️  Abbruch: {worksheet_path.name}[/yellow]"
                         )
+                        cancelled_count += 1
                         continue
 
                 worksheet_name = worksheet_path.stem
@@ -396,21 +403,37 @@ class BatchProcessor:
                 # self._move_processed_worksheet(worksheet_path, output_subfolder)
 
                 console.print(f"[green]✓ {worksheet_path.name} fertig![/green]")
+                processed_count += 1
+
+        return (processed_count, cancelled_count)
 
     def process_all_groups(self) -> None:
         """Process all groups (A, B, C)."""
         console.print("\n[bold green]🚀 Starte Batch-Verarbeitung[/bold green]\n")
 
+        total_processed = 0
+        total_cancelled = 0
+
         for group in self.groups:
             try:
-                self.process_group(group)
+                processed, cancelled = self.process_group(group)
+                total_processed += processed
+                total_cancelled += cancelled
             except Exception as e:
                 console.print(f"[red]❌ Fehler bei Gruppe {group}: {e}[/red]")
                 logger.error(f"Error processing group {group}: {e}", exc_info=True)
 
-        console.print(
-            "\n[bold green]✅ Batch-Verarbeitung abgeschlossen![/bold green]\n"
-        )
+        # Summary message
+        console.print()
+        if total_cancelled > 0:
+            console.print(
+                f"[bold yellow]⚠️  {total_processed} Arbeitsblatt/Arbeitsblätter erstellt, "
+                f"{total_cancelled} abgebrochen[/bold yellow]\n"
+            )
+        else:
+            console.print(
+                "\n[bold green]✅ Batch-Verarbeitung abgeschlossen![/bold green]\n"
+            )
 
 
 def main() -> None:
