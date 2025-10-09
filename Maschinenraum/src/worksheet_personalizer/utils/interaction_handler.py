@@ -157,7 +157,8 @@ class InteractionHandler:
                 key = readchar.readkey()
 
                 # Handle different key representations
-                if key == readchar.key.ESC or key == "\x1b":
+                # Note: On macOS Terminal, ESC may come as '\x1b\n' instead of just '\x1b'
+                if key.startswith("\x1b") or key == readchar.key.ESC:
                     self.console.print(" ESC")
                     return "esc"
                 elif key == readchar.key.ENTER or key in ("\r", "\n"):
