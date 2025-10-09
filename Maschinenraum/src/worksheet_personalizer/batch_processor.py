@@ -407,8 +407,12 @@ class BatchProcessor:
 
         return (processed_count, cancelled_count)
 
-    def process_all_groups(self) -> None:
-        """Process all groups (A, B, C)."""
+    def process_all_groups(self) -> int:
+        """Process all groups (A, B, C).
+
+        Returns:
+            Exit code: 0 for success, 2 if any worksheets were cancelled
+        """
         console.print("\n[bold green]🚀 Starte Batch-Verarbeitung[/bold green]\n")
 
         total_processed = 0
@@ -430,10 +434,12 @@ class BatchProcessor:
                 f"[bold yellow]⚠️  {total_processed} Arbeitsblatt/Arbeitsblätter erstellt, "
                 f"{total_cancelled} abgebrochen[/bold yellow]\n"
             )
+            return 2  # Exit code 2 indicates cancellation
         else:
             console.print(
                 "\n[bold green]✅ Batch-Verarbeitung abgeschlossen![/bold green]\n"
             )
+            return 0  # Exit code 0 indicates success
 
 
 def main() -> None:
@@ -443,12 +449,13 @@ def main() -> None:
 
     try:
         processor = BatchProcessor(base_path)
-        processor.process_all_groups()
+        exit_code = processor.process_all_groups()
+        exit(exit_code)
 
     except Exception as e:
         console.print(f"\n[bold red]❌ Kritischer Fehler:[/bold red] {e}\n")
         logger.error(f"Critical error in batch processing: {e}", exc_info=True)
-        raise
+        exit(1)
 
 
 if __name__ == "__main__":

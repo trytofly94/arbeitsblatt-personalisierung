@@ -136,7 +136,7 @@ class InteractionHandler:
         )
         self.console.print("  [green]ENTER[/green] - Continue with all students")
         self.console.print("  [yellow]M[/yellow] - Open settings menu")
-        self.console.print("  [red]ESC[/red] - Cancel operation")
+        self.console.print("  [red]ESC[/red] - Back / Skip this worksheet")
         self.console.print()
 
         if READCHAR_AVAILABLE:

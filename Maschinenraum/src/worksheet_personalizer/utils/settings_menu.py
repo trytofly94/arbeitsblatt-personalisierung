@@ -192,11 +192,9 @@ class SettingsMenu:
                 f"[green]✓ Name setting updated to: {'Yes' if new_value else 'No'}[/green]"
             )
             logger.info(f"Name setting changed to: {new_value}")
-            input("\nPress Enter to continue...")
             return True
         else:
             self.console.print("[yellow]No change made[/yellow]")
-            input("\nPress Enter to continue...")
             return False
 
     def _adjust_photo_size(self) -> bool:
@@ -252,11 +250,9 @@ class SettingsMenu:
                     self.console.print(
                         "[red]Error: Size must be between 0.5 and 10.0 cm[/red]"
                     )
-                    input("\nPress Enter to continue...")
                     return False
             except (ValueError, EOFError):
                 self.console.print("[red]Invalid input[/red]")
-                input("\nPress Enter to continue...")
                 return False
         else:
             new_size = size_presets[choice][0]
@@ -267,11 +263,9 @@ class SettingsMenu:
                 f"[green]✓ Photo size updated to: {new_size} cm[/green]"
             )
             logger.info(f"Photo size changed to: {new_size} cm")
-            input("\nPress Enter to continue...")
             return True
         else:
             self.console.print("[yellow]No change made[/yellow]")
-            input("\nPress Enter to continue...")
             return False
 
     def _adjust_name_top_margin(self) -> bool:
@@ -369,9 +363,7 @@ class SettingsMenu:
                 f"[green]✓ {title.split()[0]} updated to: {self._get_margin_description(new_value)}[/green]"
             )
             logger.info(f"{setting_key} changed to: {new_value}")
-            input("\nPress Enter to continue...")
             return True
         else:
             self.console.print("[yellow]No change made[/yellow]")
-            input("\nPress Enter to continue...")
             return False
