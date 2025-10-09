@@ -70,24 +70,27 @@ class SettingsMenu:
             self.console.print("  3) Name distance from top")
             self.console.print("  4) Photo distance from top")
             self.console.print("  5) Photo distance from right")
-            self.console.print("  6) Back to preview")
+            self.console.print("  [green]ENTER[/green] - Back to preview")
             self.console.print()
 
             # Get user choice with single-key input
             if READCHAR_AVAILABLE:
-                self.console.print("[dim]Press a number key (1-6)...[/dim]", end="")
-                choice = self._wait_for_number_key(["1", "2", "3", "4", "5", "6"])
+                self.console.print("[dim]Press a number key (1-5) or ENTER...[/dim]", end="")
+                choice = self._wait_for_menu_key(["1", "2", "3", "4", "5"])
                 self.console.print(f" {choice}")
             else:
                 # Fallback to Enter-based input
                 from rich.prompt import Prompt
                 choice = Prompt.ask(
                     "Select an option",
-                    choices=["1", "2", "3", "4", "5", "6"],
-                    default="6",
+                    choices=["1", "2", "3", "4", "5", ""],
+                    default="",
                 )
 
-            if choice == "1":
+            if choice == "enter" or choice == "":
+                # Exit menu
+                break
+            elif choice == "1":
                 if self._toggle_add_name():
                     changes_made = True
             elif choice == "2":
@@ -102,11 +105,25 @@ class SettingsMenu:
             elif choice == "5":
                 if self._adjust_photo_right_margin():
                     changes_made = True
-            elif choice == "6":
-                # Exit menu
-                break
 
         return changes_made
+
+    def _wait_for_menu_key(self, valid_keys: list[str]) -> str:
+        """Wait for user to press a number key or ENTER.
+
+        Args:
+            valid_keys: List of valid number key choices (e.g., ["1", "2", "3"])
+
+        Returns:
+            The pressed key as a string, or "enter" if ENTER was pressed
+        """
+        while True:
+            key = readchar.readkey()
+            if key == readchar.key.ENTER or key in ("\r", "\n"):
+                return "enter"
+            elif key in valid_keys:
+                return key
+            # Ignore invalid keys and wait for a valid one
 
     def _wait_for_number_key(self, valid_keys: list[str]) -> str:
         """Wait for user to press a number key.
