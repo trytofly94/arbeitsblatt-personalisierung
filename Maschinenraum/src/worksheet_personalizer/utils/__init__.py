@@ -11,6 +11,8 @@ from worksheet_personalizer.utils.image_utils import (
     render_text_on_image,
     scale_photo,
 )
+from worksheet_personalizer.utils.interaction_handler import InteractionHandler
+from worksheet_personalizer.utils.settings_menu import SettingsMenu
 
 __all__ = [
     "discover_student_photos",
@@ -20,4 +22,6 @@ __all__ = [
     "scale_photo",
     "render_text_on_image",
     "ensure_rgb",
+    "InteractionHandler",
+    "SettingsMenu",
 ]

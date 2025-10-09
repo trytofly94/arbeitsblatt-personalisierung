@@ -53,12 +53,19 @@ console = Console()
     default=False,
     help="Enable verbose logging (DEBUG level)",
 )
+@click.option(
+    "--no-preview",
+    is_flag=True,
+    default=False,
+    help="Skip interactive preview mode and process directly",
+)
 def personalize(
     worksheet: Path,
     students_folder: Path,
     output_folder: Path,
     add_name: bool,
     verbose: bool,
+    no_preview: bool,
 ) -> None:
     """Personalize worksheets with student photos.
 
@@ -85,6 +92,7 @@ def personalize(
     console.print(f"[bold]Students:[/bold] {students_folder}")
     console.print(f"[bold]Output:[/bold] {output_folder}")
     console.print(f"[bold]Add Names:[/bold] {add_name}")
+    console.print(f"[bold]Preview:[/bold] {not no_preview}")
     console.print("=" * 50 + "\n")
 
     try:
@@ -101,6 +109,7 @@ def personalize(
                 students_folder=students_folder,
                 output_folder=output_folder,
                 add_name=add_name,
+                preview_enabled=not no_preview,
             )
 
             progress.update(task, completed=True)

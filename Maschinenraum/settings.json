@@ -1,6 +1,10 @@
 {
-  "photo_size_cm": 2.5,
+  "photo_size_cm": 3.5,
   "add_name": true,
   "add_name_default": true,
-  "name_top_margin_cm": 2.0
+  "name_top_margin_cm": 2.0,
+  "photo_top_margin_percent": 0.5,
+  "name_top_margin_percent": 5.0,
+  "photo_right_margin_percent": 3.5,
+  "photo_position": "top-right"
 }

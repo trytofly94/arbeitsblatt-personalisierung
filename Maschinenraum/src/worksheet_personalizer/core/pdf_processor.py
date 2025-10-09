@@ -12,22 +12,18 @@ from typing import Literal
 from PIL import Image
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.utils import ImageReader
-from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 
 from worksheet_personalizer.config import (
-    A4_HEIGHT_CM,
     A4_WIDTH_CM,
-    DPI_PDF,
     PHOTO_SIZE_CM,
 )
 from worksheet_personalizer.models.student import Student
 from worksheet_personalizer.settings_manager import SettingsManager
 from worksheet_personalizer.utils.image_utils import (
-    cm_to_pixels,
     ensure_rgb,
-    scale_photo,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,6 +32,7 @@ NamePosition = Literal["beside_photo", "center", "left", "right"]
 
 # Register Norddruck font
 _NORDDRUCK_REGISTERED = False
+
 
 def _register_norddruck_font() -> str:
     """Register Norddruck font with ReportLab.
@@ -50,23 +47,25 @@ def _register_norddruck_font() -> str:
     global _NORDDRUCK_REGISTERED
 
     if _NORDDRUCK_REGISTERED:
-        return 'Norddruck'
+        return "Norddruck"
 
     try:
         # Get path to rebuilt font file in package
         font_path = Path(__file__).parent.parent / "fonts" / "NORDDRUC_REBUILT.TTF"
 
         if font_path.exists():
-            pdfmetrics.registerFont(TTFont('Norddruck', str(font_path)))
+            pdfmetrics.registerFont(TTFont("Norddruck", str(font_path)))
             _NORDDRUCK_REGISTERED = True
             logger.info(f"Norddruck font registered successfully from {font_path.name}")
-            return 'Norddruck'
+            return "Norddruck"
         else:
-            logger.warning(f"Norddruck font not found at {font_path}, using Helvetica-Bold")
-            return 'Helvetica-Bold'
+            logger.warning(
+                f"Norddruck font not found at {font_path}, using Helvetica-Bold"
+            )
+            return "Helvetica-Bold"
     except Exception as e:
         logger.warning(f"Could not register Norddruck font: {e}, using Helvetica-Bold")
-        return 'Helvetica-Bold'
+        return "Helvetica-Bold"
 
 
 class PDFProcessor:
@@ -109,22 +108,32 @@ class PDFProcessor:
 
         # Get font_size from settings or calculate dynamically
         self.font_size = self.settings_manager.get("font_size", None)
-        self.name_position: NamePosition = self.settings_manager.get("name_position", "beside_photo")
+        self.name_position: NamePosition = self.settings_manager.get(
+            "name_position", "beside_photo"
+        )
 
         # Name vertical position: percentage from top edge (default 2.5%)
-        self.name_top_margin_percent = self.settings_manager.get("name_top_margin_percent", 2.5)
+        self.name_top_margin_percent = self.settings_manager.get(
+            "name_top_margin_percent", 2.5
+        )
 
         # Photo vertical position: percentage from top edge (default 2.5%)
-        self.photo_top_margin_percent = self.settings_manager.get("photo_top_margin_percent", 2.5)
+        self.photo_top_margin_percent = self.settings_manager.get(
+            "photo_top_margin_percent", 2.5
+        )
 
         # Photo horizontal position: percentage from right edge (default 3.5%)
-        self.photo_right_margin_percent = self.settings_manager.get("photo_right_margin_percent", 3.5)
+        self.photo_right_margin_percent = self.settings_manager.get(
+            "photo_right_margin_percent", 3.5
+        )
 
         logger.info(f"Initialized PDF processor for: {worksheet_path.name}")
-        logger.debug(f"Settings: font={self.font_name}, photo_size={self.photo_size_cm}cm, "
-                    f"font_size={'dynamic' if self.font_size is None else self.font_size}, "
-                    f"name_position={self.name_position}, photo_top={self.photo_top_margin_percent}%, "
-                    f"photo_right={self.photo_right_margin_percent}%, name_top={self.name_top_margin_percent}%")
+        logger.debug(
+            f"Settings: font={self.font_name}, photo_size={self.photo_size_cm}cm, "
+            f"font_size={'dynamic' if self.font_size is None else self.font_size}, "
+            f"name_position={self.name_position}, photo_top={self.photo_top_margin_percent}%, "
+            f"photo_right={self.photo_right_margin_percent}%, name_top={self.name_top_margin_percent}%"
+        )
 
     def _get_page_dimensions(self) -> tuple[float, float]:
         """Get the dimensions of the first page in the PDF.
@@ -170,7 +179,6 @@ class PDFProcessor:
 
         # Convert A4 dimensions from cm to inches
         a4_width_inches = A4_WIDTH_CM / 2.54
-        a4_height_inches = A4_HEIGHT_CM / 2.54
 
         # Calculate DPI based on width (more reliable than height)
         effective_dpi = page_width / a4_width_inches
@@ -197,11 +205,10 @@ class PDFProcessor:
         # Get page dimensions
         page_width, page_height = self._get_page_dimensions()
 
-        # Calculate effective DPI for A4 print size
-        effective_dpi = self._calculate_a4_dpi()
-
         # Calculate dynamic font size if not set (2.25% of PDF height)
-        font_size = self.font_size if self.font_size is not None else page_height * 0.0225
+        font_size = (
+            self.font_size if self.font_size is not None else page_height * 0.0225
+        )
 
         # Calculate margins using user-defined percentages
         margin_right = page_width * (self.photo_right_margin_percent / 100)
@@ -225,7 +232,9 @@ class PDFProcessor:
 
             # Convert photo to ReportLab ImageReader with maximum quality
             photo_buffer = io.BytesIO()
-            photo.save(photo_buffer, format="PNG", optimize=False)  # PNG = lossless, no quality loss
+            photo.save(
+                photo_buffer, format="PNG", optimize=False
+            )  # PNG = lossless, no quality loss
             photo_buffer.seek(0)
             photo_reader = ImageReader(photo_buffer)
 
@@ -279,7 +288,9 @@ class PDFProcessor:
                     name_x = max(name_x, min_x)
 
                     # Calculate vertical position: percentage-based distance from top edge
-                    name_top_margin_pt = page_height * (self.name_top_margin_percent / 100)
+                    name_top_margin_pt = page_height * (
+                        self.name_top_margin_percent / 100
+                    )
                     name_y = page_height - name_top_margin_pt
 
                     logger.debug(

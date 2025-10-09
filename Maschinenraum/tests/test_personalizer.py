@@ -100,6 +100,7 @@ def test_personalizer_process_all_pdf(
         worksheet_path=sample_worksheet_pdf,
         students_folder=sample_students_folder,
         output_folder=output_dir,
+        preview_enabled=False,
     )
 
     created_files = personalizer.process_all()
@@ -124,6 +125,7 @@ def test_personalizer_process_all_image(
         worksheet_path=sample_worksheet_image,
         students_folder=sample_students_folder,
         output_folder=output_dir,
+        preview_enabled=False,
     )
 
     created_files = personalizer.process_all()
@@ -171,6 +173,7 @@ def test_personalizer_creates_output_directory(
         worksheet_path=sample_worksheet_pdf,
         students_folder=sample_students_folder,
         output_folder=output_dir,
+        preview_enabled=False,
     )
 
     personalizer.process_all()
@@ -190,6 +193,7 @@ def test_personalizer_with_add_name(
         students_folder=sample_students_folder,
         output_folder=output_dir,
         add_name=True,
+        preview_enabled=False,
     )
 
     assert personalizer.processor.add_name is True

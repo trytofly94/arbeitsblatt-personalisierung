@@ -7,15 +7,23 @@ and creates personalized versions in Output folders.
 import logging
 import shutil
 from pathlib import Path
-from typing import List
 
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
 
-from worksheet_personalizer.core.pdf_processor import PDFProcessor
 from worksheet_personalizer.core.image_processor import ImageProcessor
+from worksheet_personalizer.core.pdf_processor import PDFProcessor
+from worksheet_personalizer.core.preview_generator import PreviewGenerator
 from worksheet_personalizer.models.student import Student
 from worksheet_personalizer.settings_manager import SettingsManager
+from worksheet_personalizer.utils.interaction_handler import InteractionHandler
+from worksheet_personalizer.utils.settings_menu import SettingsMenu
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -40,15 +48,17 @@ class BatchProcessor:
     # Supported photo formats
     PHOTO_FORMATS = {".jpg", ".jpeg", ".png"}
 
-    def __init__(self, base_path: Path) -> None:
+    def __init__(self, base_path: Path, preview_enabled: bool = True) -> None:
         """Initialize batch processor.
 
         Args:
             base_path: Base directory containing Input-X, Schüler-X, Ausgabe-X folders
+            preview_enabled: Whether to show interactive preview before processing
         """
         self.base_path = base_path
         self.settings_manager = SettingsManager()
         self.groups = ["A", "B", "C"]
+        self.preview_enabled = preview_enabled
 
         logger.info(f"Initialized batch processor at: {base_path}")
 
@@ -67,7 +77,7 @@ class BatchProcessor:
 
         return input_folder, students_folder, output_folder
 
-    def _load_students(self, students_folder: Path) -> List[Student]:
+    def _load_students(self, students_folder: Path) -> list[Student]:
         """Load student data from a folder.
 
         Args:
@@ -119,10 +129,10 @@ class BatchProcessor:
     def _process_worksheet(
         self,
         worksheet_path: Path,
-        students: List[Student],
+        students: list[Student],
         output_folder: Path,
         progress: Progress,
-        task_id: int
+        task_id: int,
     ) -> None:
         """Process a single worksheet for all students.
 
@@ -134,7 +144,9 @@ class BatchProcessor:
             task_id: Progress task ID
         """
         if not students:
-            console.print(f"[yellow]⚠️  Keine Schüler gefunden für {worksheet_path.name}[/yellow]")
+            console.print(
+                f"[yellow]⚠️  Keine Schüler gefunden für {worksheet_path.name}[/yellow]"
+            )
             return
 
         # Get settings
@@ -146,7 +158,9 @@ class BatchProcessor:
         elif worksheet_path.suffix.lower() in self.IMAGE_FORMATS:
             processor = ImageProcessor(worksheet_path, add_name=add_name)
         else:
-            console.print(f"[red]❌ Nicht unterstütztes Format: {worksheet_path.suffix}[/red]")
+            console.print(
+                f"[red]❌ Nicht unterstütztes Format: {worksheet_path.suffix}[/red]"
+            )
             return
 
         # Process for each student
@@ -164,9 +178,13 @@ class BatchProcessor:
 
             except Exception as e:
                 console.print(f"[red]❌ Fehler bei {student.name}: {e}[/red]")
-                logger.error(f"Error processing worksheet for {student.name}: {e}", exc_info=True)
+                logger.error(
+                    f"Error processing worksheet for {student.name}: {e}", exc_info=True
+                )
 
-    def _move_processed_worksheet(self, worksheet_path: Path, output_folder: Path) -> None:
+    def _move_processed_worksheet(
+        self, worksheet_path: Path, output_folder: Path
+    ) -> None:
         """Move processed worksheet from Input to Output folder.
 
         Args:
@@ -178,14 +196,129 @@ class BatchProcessor:
             shutil.move(str(worksheet_path), str(target_path))
             logger.info(f"Moved {worksheet_path.name} to {output_folder}")
         except Exception as e:
-            console.print(f"[yellow]⚠️  Konnte {worksheet_path.name} nicht verschieben: {e}[/yellow]")
+            console.print(
+                f"[yellow]⚠️  Konnte {worksheet_path.name} nicht verschieben: {e}[/yellow]"
+            )
             logger.error(f"Error moving worksheet: {e}", exc_info=True)
 
-    def process_group(self, group: str) -> None:
+    def _show_preview_for_worksheet(
+        self, worksheet_path: Path, students: list[Student]
+    ) -> bool:
+        """Show preview for a worksheet and handle user interaction.
+
+        Generates a preview using the first student, opens it in the system
+        viewer, and waits for user input (ESC/ENTER/MENU).
+
+        Args:
+            worksheet_path: Path to the worksheet to preview
+            students: List of students (first one used for preview)
+
+        Returns:
+            True to continue processing, False to cancel
+        """
+        console.print(
+            f"\n[bold cyan]🔍 Generiere Vorschau für {worksheet_path.name}...[/bold cyan]"
+        )
+
+        # Create preview generator
+        try:
+            preview_gen = PreviewGenerator(
+                worksheet_path=worksheet_path,
+                students=students,
+                settings_manager=self.settings_manager,
+            )
+        except ValueError as e:
+            console.print(f"[red]❌ Fehler beim Erstellen der Vorschau: {e}[/red]")
+            return False
+
+        # Create interaction handler
+        interaction = InteractionHandler(console)
+
+        # Create settings menu
+        settings_menu = SettingsMenu(self.settings_manager, console)
+
+        preview_path = None
+        viewer_process = None
+
+        try:
+            # Main preview loop
+            while True:
+                # Generate preview (or regenerate after settings change)
+                try:
+                    preview_path = preview_gen.generate_preview()
+                    console.print(
+                        f"[green]✓ Vorschau erstellt mit Schüler: {students[0].name}[/green]"
+                    )
+                except Exception as e:
+                    console.print(f"[red]❌ Fehler bei Vorschau-Generierung: {e}[/red]")
+                    logger.error(f"Preview generation failed: {e}", exc_info=True)
+
+                    # Ask if user wants to continue anyway
+                    from rich.prompt import Confirm
+
+                    if Confirm.ask("Möchten Sie trotzdem fortfahren?", default=False):
+                        return True
+                    else:
+                        return False
+
+                # Open in viewer
+                try:
+                    viewer_process = interaction.open_in_viewer(preview_path)
+                except Exception as e:
+                    console.print(
+                        f"[yellow]⚠️  Fehler beim Öffnen der Vorschau: {e}[/yellow]"
+                    )
+                    logger.warning(f"Failed to open preview: {e}")
+
+                # Wait for user input
+                action = interaction.wait_for_input()
+
+                if action == "esc":
+                    console.print("[yellow]Vorgang abgebrochen.[/yellow]")
+                    return False
+
+                elif action == "enter":
+                    console.print("[green]✓ Fortfahren mit allen Schülern...[/green]")
+                    return True
+
+                elif action == "menu":
+                    # Close viewer while in menu
+                    if viewer_process:
+                        interaction.close_viewer(viewer_process)
+                        viewer_process = None
+
+                    # Show settings menu
+                    changes_made = settings_menu.show()
+
+                    # If changes were made, regenerate preview
+                    if changes_made:
+                        console.print(
+                            "\n[cyan]Einstellungen geändert, generiere neue Vorschau...[/cyan]"
+                        )
+                        # Clean up old preview
+                        if preview_path:
+                            preview_gen.cleanup_preview(preview_path)
+                            preview_path = None
+                        # Loop will regenerate preview
+                    else:
+                        # No changes, just reopen the preview
+                        pass
+
+        finally:
+            # Clean up
+            if viewer_process:
+                interaction.close_viewer(viewer_process)
+            if preview_path:
+                preview_gen.cleanup_preview(preview_path)
+
+    def process_group(self, group: str) -> tuple[int, int]:
         """Process all worksheets for a specific group.
 
         Args:
             group: Group identifier (A, B, or C)
+
+        Returns:
+            Tuple of (processed_count, cancelled_count)
         """
         input_folder, students_folder, output_folder = self._get_folder_paths(group)
 
@@ -193,8 +326,10 @@ class BatchProcessor:
 
         # Check if folders exist
         if not input_folder.exists():
-            console.print(f"[yellow]⚠️  Input-Ordner nicht gefunden: {input_folder}[/yellow]")
-            return
+            console.print(
+                f"[yellow]⚠️  Input-Ordner nicht gefunden: {input_folder}[/yellow]"
+            )
+            return (0, 0)
 
         if not output_folder.exists():
             output_folder.mkdir(parents=True, exist_ok=True)
@@ -203,23 +338,33 @@ class BatchProcessor:
         students = self._load_students(students_folder)
 
         if not students:
-            console.print(f"[yellow]⚠️  Keine Schülerfotos gefunden in {students_folder}[/yellow]")
-            return
+            console.print(
+                f"[yellow]⚠️  Keine Schülerfotos gefunden in {students_folder}[/yellow]"
+            )
+            return (0, 0)
 
         # Find all worksheets in Input folder
         worksheets = [
-            f for f in input_folder.iterdir()
+            f
+            for f in input_folder.iterdir()
             if f.is_file() and f.suffix.lower() in self.SUPPORTED_FORMATS
         ]
 
         if not worksheets:
-            console.print(f"[yellow]⚠️  Keine Arbeitsblätter gefunden in {input_folder}[/yellow]")
-            return
+            console.print(
+                f"[yellow]⚠️  Keine Arbeitsblätter gefunden in {input_folder}[/yellow]"
+            )
+            return (0, 0)
 
         console.print(f"[green]✓ {len(students)} Schüler gefunden[/green]")
-        console.print(f"[green]✓ {len(worksheets)} Arbeitsblatt/Arbeitsblätter gefunden[/green]")
+        console.print(
+            f"[green]✓ {len(worksheets)} Arbeitsblatt/Arbeitsblätter gefunden[/green]"
+        )
 
         # Process each worksheet
+        processed_count = 0
+        cancelled_count = 0
+
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -229,39 +374,72 @@ class BatchProcessor:
         ) as progress:
 
             for worksheet_path in worksheets:
+                # Show preview if enabled
+                if self.preview_enabled:
+                    continue_processing = self._show_preview_for_worksheet(
+                        worksheet_path, students
+                    )
+                    if not continue_processing:
+                        console.print(
+                            f"[yellow]⚠️  Abbruch: {worksheet_path.name}[/yellow]"
+                        )
+                        cancelled_count += 1
+                        continue
+
                 worksheet_name = worksheet_path.stem
-                output_subfolder = self._create_output_folder(output_folder, worksheet_name)
+                output_subfolder = self._create_output_folder(
+                    output_folder, worksheet_name
+                )
 
                 task_id = progress.add_task(
-                    f"[cyan]Verarbeite {worksheet_path.name}...",
-                    total=len(students)
+                    f"[cyan]Verarbeite {worksheet_path.name}...", total=len(students)
                 )
 
                 self._process_worksheet(
-                    worksheet_path,
-                    students,
-                    output_subfolder,
-                    progress,
-                    task_id
+                    worksheet_path, students, output_subfolder, progress, task_id
                 )
 
                 # Keep original worksheet in Input folder (don't move)
                 # self._move_processed_worksheet(worksheet_path, output_subfolder)
 
                 console.print(f"[green]✓ {worksheet_path.name} fertig![/green]")
+                processed_count += 1
 
-    def process_all_groups(self) -> None:
-        """Process all groups (A, B, C)."""
+        return (processed_count, cancelled_count)
+
+    def process_all_groups(self) -> int:
+        """Process all groups (A, B, C).
+
+        Returns:
+            Exit code: 0 for success, 2 if any worksheets were cancelled
+        """
         console.print("\n[bold green]🚀 Starte Batch-Verarbeitung[/bold green]\n")
+
+        total_processed = 0
+        total_cancelled = 0
 
         for group in self.groups:
             try:
-                self.process_group(group)
+                processed, cancelled = self.process_group(group)
+                total_processed += processed
+                total_cancelled += cancelled
             except Exception as e:
                 console.print(f"[red]❌ Fehler bei Gruppe {group}: {e}[/red]")
                 logger.error(f"Error processing group {group}: {e}", exc_info=True)
 
-        console.print("\n[bold green]✅ Batch-Verarbeitung abgeschlossen![/bold green]\n")
+        # Summary message
+        console.print()
+        if total_cancelled > 0:
+            console.print(
+                f"[bold yellow]⚠️  {total_processed} Arbeitsblatt/Arbeitsblätter erstellt, "
+                f"{total_cancelled} abgebrochen[/bold yellow]\n"
+            )
+            return 2  # Exit code 2 indicates cancellation
+        else:
+            console.print(
+                "\n[bold green]✅ Batch-Verarbeitung abgeschlossen![/bold green]\n"
+            )
+            return 0  # Exit code 0 indicates success
 
 
 def main() -> None:
@@ -271,12 +449,13 @@ def main() -> None:
 
     try:
         processor = BatchProcessor(base_path)
-        processor.process_all_groups()
+        exit_code = processor.process_all_groups()
+        exit(exit_code)
 
     except Exception as e:
         console.print(f"\n[bold red]❌ Kritischer Fehler:[/bold red] {e}\n")
         logger.error(f"Critical error in batch processing: {e}", exc_info=True)
-        raise
+        exit(1)
 
 
 if __name__ == "__main__":

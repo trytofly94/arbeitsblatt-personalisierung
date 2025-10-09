@@ -46,6 +46,7 @@ def test_cli_personalize_pdf_success(
             str(sample_students_folder),
             "--output-folder",
             str(output_dir),
+            "--no-preview",
         ],
     )
 
@@ -71,6 +72,7 @@ def test_cli_personalize_image_success(
             str(sample_students_folder),
             "--output-folder",
             str(output_dir),
+            "--no-preview",
         ],
     )
 
@@ -96,6 +98,7 @@ def test_cli_with_add_name_flag(
             "--output-folder",
             str(output_dir),
             "--add-name",
+            "--no-preview",
         ],
     )
 
@@ -121,6 +124,7 @@ def test_cli_with_verbose_flag(
             "--output-folder",
             str(output_dir),
             "--verbose",
+            "--no-preview",
         ],
     )
 
@@ -194,6 +198,7 @@ def test_cli_short_options(
             "-o",
             str(output_dir),
             "-n",  # add-name
+            "--no-preview",
         ],
     )
 
